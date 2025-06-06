@@ -19,6 +19,7 @@ Run:
 """
 
 from pathlib import Path
+import base64
 import streamlit as st
 
 # ────────── config ──────────
@@ -39,7 +40,9 @@ if not (css_file.exists() and logo_file.exists()):
 
 # read CSS
 css_content = css_file.read_text(encoding="utf-8")
-logo_url = "app/static/assets/CCF_icone.jpg"  # Streamlit serves this path automatically
+logo_bytes = logo_file.read_bytes()
+logo_url = "data:image/jpg;base64," + base64.b64encode(logo_bytes).decode()
+
 
 # HTML template with placeholder
 HTML = f"""
