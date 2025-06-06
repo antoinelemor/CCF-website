@@ -1,65 +1,82 @@
-"""Sticky buttons navbar visible on every page during scrolling."""
+"""
+Navigation bar component
+========================
+• Re-uses the `.cta-btn` class defined in *home.css* so the buttons look
+  **identical** to the hero CTA buttons.
+• Loads *home.css* automatically on every non-Home page (safe if already
+  loaded).
+• Hidden when `active="Home"`.
 
-from __future__ import annotations
-
-from typing import Iterable, Literal
-
+Usage
+-----
+    from app.components.navbar import navbar
+    navbar(active="Database")
+"""
+from pathlib import Path
 import streamlit as st
 
-PageName = Literal["Home", "Database", "Idea", "Analysis"]
+# Logical routes --------------------------------------------------------------
+LINKS = {
+    "Home":     "/Home",
+    "Database": "/Database",
+    "Idea":     "/Idea",
+    "Analysis": "/Analysis",
+}
 
-NAV_STYLE = """
-<style>
-body{padding-top:74px;}
-.sticky-nav{
-    position:fixed; top:0; left:0; width:100%;
-    display:flex; justify-content:center;
-    z-index:3000;
-    pointer-events:none;
-    user-select:none;
-}
-.navbar{
-    display:flex; gap:1rem; padding:.55rem 0;
-    pointer-events:auto;
-}
-.nav-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:.3rem;
-    min-width:110px; padding:.45rem 1.2rem;
-    font-weight:700; border-radius:999px; text-decoration:none;
-    background:linear-gradient(135deg,#3f83ff 0%,#ffffff 100%);
-    color:#0a2342 !important; box-shadow:0 2px 6px rgba(0,0,0,.18);
-    transition:transform .18s, box-shadow .18s;
-}
-.nav-btn:hover{
-    transform:translateY(-3px); box-shadow:0 4px 12px rgba(0,0,0,.28);
-}
-.nav-btn.active,
-.nav-btn:disabled{
-    pointer-events:none;
-    background:linear-gradient(135deg,#184eea 0%,#c7d9ff 100%);
-    color:#fff !important; box-shadow:0 3px 9px rgba(0,0,0,.25);
-}
-</style>
-"""
-
-PAGES: Iterable[tuple[str, str, str]] = (
-    ("Home", "/Home", "🏠"),
-    ("Database", "/Database", "🗄️"),
-    ("Idea", "/Idea", "💡"),
-    ("Analysis", "/Analysis", "📊"),
-)
+# -----------------------------------------------------------------------------
 
 
-def navbar(active: PageName = "Home") -> None:
-    """Render the sticky navigation bar."""
-    st.markdown(NAV_STYLE, unsafe_allow_html=True)
+def _inject_home_css() -> None:
+    """Load `app/static/css/home.css` once, if not already present."""
+    root = Path(__file__).resolve().parents[2]          # project root
+    css_file = root / "app" / "static" / "css" / "home.css"
 
-    buttons = "".join(
-        f'<a class="nav-btn {"active" if label==active else ""}" '
-        f'href="{url}" target="_self">{icon}<span>{label}</span></a>'
-        for label, url, icon in PAGES
-    )
+    if css_file.exists():
+        css_content = css_file.read_text(encoding="utf-8")
+        # Add an ID so we don’t inject twice on re-runs
+        st.markdown(
+            f"<style id='ccf-home-css'>{css_content}</style>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.warning("⚠️ home.css not found – navbar style may differ.")
+
+
+def navbar(active: str = "Home") -> None:
+    """Render the nav bar unless we are on the landing page.
+
+    Parameters
+    ----------
+    active : str, optional
+        Logical name of the current page (case-insensitive).
+    """
+    if active.lower() == "home":
+        return  # keep the hero page clean
+
+    _inject_home_css()  # ensures .cta-btn is available everywhere
+
+    # Extra layout styles specific to the nav container
     st.markdown(
-        f'<div class="sticky-nav"><nav class="navbar">{buttons}</nav></div>',
+        """
+        <style>
+        .navbar{
+            display:flex;
+            gap:1rem;
+            justify-content:center;
+            margin:1.5rem 0 2rem;
+        }
+        /* Highlight current page */
+        .navbar .active{
+            filter:brightness(0.85);
+        }
+        </style>
+        """,
         unsafe_allow_html=True,
     )
+
+    links_html = "".join(
+        f'<a class="cta-btn {"active" if name == active else ""}" '
+        f'href="{target}" target="_self">{name}</a>'
+        for name, target in LINKS.items()
+    )
+    st.markdown(f'<nav class="navbar">{links_html}</nav>', unsafe_allow_html=True)

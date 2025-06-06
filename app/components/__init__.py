@@ -1,2 +1,2 @@
-from .navbar import navbar   # chemin correct
+from .navbar import navbar
 __all__ = ["navbar"]

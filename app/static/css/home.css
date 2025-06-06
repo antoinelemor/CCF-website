@@ -1,19 +1,22 @@
 /* =============================================================
    CCF-Website • home.css
-   Style sheet re-written from scratch
    -------------------------------------------------------------
    • Global beige theme (#ceccbd) applied to page chrome
-     (header, sidebar, tabs, empty space).
-   • Hero section is a “window” on the background picture:
-     fully transparent, only the text and CTA buttons remain.
-   • CTA buttons keep their gradient regardless of overrides.
+   • Hero section is a “window” on the background picture
+   • CTA buttons share the same gradient AND text colour
+   • Text colour is driven by --cta-text (easy to tweak)
    ============================================================= */
 
 /* ----------  0. GLOBAL PALETTE  -------------------------------- */
 :root {
   --ccf-beige:   #ceccbd;
-  --cta-grad-1:  #f0f1f2;   /* bleu  → blanc */
-  --cta-grad-2:  #41626a;
+
+  /* CTA gradient colours */
+  --cta-grad-1:  #f0f1f2;   /* light grey → white  */
+  --cta-grad-2:  #41626a;   /* desaturated teal   */
+
+  /* NEW  – CTA text colour (hero + navbar) */
+  --cta-text:    #000000;   /* <— change me to any HEX / rgb() / named colour */
 }
 
 /* ----------  1. PAGE CHROME (header, sidebar, etc.) ------------ */
@@ -39,10 +42,15 @@ footer,
   to   { opacity: 1; }
 }
 
+@keyframes fadeWord {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ----------  3. HERO WINDOW ------------------------------------ */
 .hero {
   position: relative;
-  min-height: 100vh;                /* full-height intro        */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -65,7 +73,7 @@ footer,
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;              /* show full logo           */
+  object-fit: contain;
   filter: blur(1px);
   animation: appear_then_dim 4s forwards;
   z-index: 0;
@@ -82,7 +90,7 @@ footer,
   opacity: 0;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   animation: fadeIn 1.6s forwards;
-  animation-delay: 4s;              /* after bg dim             */
+  animation-delay: 4s;
 }
 
 /* ----------  5. CTA BUTTON ROW --------------------------------- */
@@ -95,13 +103,14 @@ footer,
   animation-delay: 4.2s;
 }
 
-/* ----------  6. CTA BUTTONS ------------------------------------ */
-.cta-btn {
+/* ----------  6. CTA BUTTONS  (hero + navbar) ------------------- */
+.cta-btn,
+.cta-btn:visited {                    /* ensure colour overrides Streamlit */
   padding: 0.85rem 1.75rem;
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--cta-grad-1), var(--cta-grad-2));
-  color: #fff;
+  color: var(--cta-text) !important;  /* ← single source of truth */
   font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
@@ -110,33 +119,120 @@ footer,
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.cta-btn,
+.cta-btn:visited,
+.cta-btn:hover,
+.cta-btn:active,
+.cta-btn:focus {
+  text-decoration: none !important;
+}
+
+
 .cta-btn:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
 }
 
-/* ----------  7. DESCRIPTION ANIMÉE  ---------------------------- */
-.description{
-  margin-top:1.2rem;
-  font-size:clamp(1rem,1vw+0.8rem,1.15rem);
-  font-weight:500;
-  color:#000000;
-  max-width:680px;
-  line-height:1.4;
-  text-shadow:0 1px 3px rgba(0,0,0,0.3);
-  display:flex;          /* pour que les spans wrap normalement */
+/* Active-page visual cue (navbar only) */
+.cta-btn.active {
+  filter: brightness(0.85);
+}
+
+/* ----------  7. DESCRIPTION ANIMÉE ----------------------------- */
+.description {
+  margin-top: 1.2rem;
+  font-size: clamp(1rem, 1vw + 0.8rem, 1.15rem);
+  font-weight: 500;
+  color: #000000;
+  max-width: 680px;
+  line-height: 1.4;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.type-word {
+  opacity: 0;
+  animation: fadeWord 0.3s forwards ease-out;
+}
+
+/* ----------  8. PROJECT MEMBERS TITLE ------------------------- */
+.team-title{
+  font-size: clamp(1.3rem, 1.8vw + 0.8rem, 1.7rem);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 2.2rem 0 1.2rem;   /* espace au-dessus/dessous */
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+  animation-delay: 4.6s;     /* juste après les boutons */
+}
+
+/* ----------  9. TEAM ROW (placée sous le titre) --------------- */
+.team-row{
+  display:flex;
   flex-wrap:wrap;
+  gap:1.8rem;
   justify-content:center;
-}
-
-/* Animation mot par mot */
-@keyframes fadeWord{
-  from{opacity:0;transform:translateY(4px)}
-  to  {opacity:1;transform:translateY(0)}
-}
-
-.type-word{
   opacity:0;
-  animation:fadeWord 0.3s forwards ease-out;
+  animation:fadeIn 1s forwards;
+  animation-delay:4.8s;      /* suit le titre */
 }
 
+/* cartes individuelles… (inchangé) */
+.member{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-decoration:none;
+  color:inherit;
+  opacity:0;                 /* fade membre par membre */
+  animation:fadeIn 0.8s forwards ease-out;
+}
+.member:nth-child(1){animation-delay:5.0s}
+.member:nth-child(2){animation-delay:5.3s}
+.member:nth-child(3){animation-delay:5.6s}
+
+.member img{
+  width:128px;
+  height:128px;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  margin-bottom:0.5rem;
+}
+
+/* ---------- 10. MEMBER NAME BUTTON ---------------------------- */
+.member-btn{
+  display:inline-block;
+  padding:0.45rem 1.1rem;
+  border:none;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--cta-grad-1),var(--cta-grad-2));
+  color:#000000 !important;           /* texte noir */
+  font-size:0.95rem;
+  font-weight:600;
+  text-decoration:none !important;    /* jamais souligné */
+  cursor:pointer;
+  box-shadow:0 3px 8px rgba(0,0,0,0.25);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.member-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 5px 12px rgba(0,0,0,0.3);
+}
+
+
+.member-name{
+  font-weight:600;
+  font-size:1rem;
+  text-align:center;
+}
+
+.member-affil{
+  font-weight:400;
+  font-size:0.85rem;
+  text-align:center;
+  opacity:0.85;
+}
