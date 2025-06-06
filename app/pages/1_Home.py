@@ -27,16 +27,20 @@ st.set_page_config(page_title="CCF – Home", page_icon="🌎", layout="centered
 
 # ────────── locate assets ──────────
 BASE = Path(__file__).resolve().parents[1]
-css_file  = BASE / "static" / "css" / "home.css"
-logo_file = BASE / "static" / "CCF_icone.jpg"
+css_file = BASE / "static" / "css" / "home.css"
+logo_file = BASE / "static" / "assets" / "CCF_icone.jpg"
 
 if not (css_file.exists() and logo_file.exists()):
-    st.error("Missing css or logo. Expected:\n  • app/static/css/home.css\n  • app/static/CCF_icone.jpg")
+    st.error(
+        "Missing css or logo. Expected:\n"
+        "  • app/static/css/home.css\n"
+        "  • app/static/assets/CCF_icone.jpg"
+    )
     st.stop()
 
 # read CSS
 css_content = css_file.read_text(encoding="utf-8")
-logo_url = "/app/static/CCF_icone.jpg"  # Streamlit serves this path automatically
+logo_url = "/app/static/assets/CCF_icone.jpg"  # Streamlit serves this path automatically
 
 # HTML template with placeholder
 HTML = f"""
