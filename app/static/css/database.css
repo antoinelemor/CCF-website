@@ -1,38 +1,89 @@
+/* =============================================================
+   CCF-Website · database.css
+   -------------------------------------------------------------
+   Focus on this page only:
+     1. Plot/ECharts tweaks
+     2. Word-by-word intro
+     3. Two “glass” CTA buttons ( centred, no word-wrap )
+   ============================================================ */
+
+/* ---------- 0. TOKENS ---------------------------------------- */
+:root{
+  --ccf-text:  #000;        /* shared with home.css */
+  --glass-bg:  rgba(255,255,255,.34);
+  --glass-bg-h:rgba(255,255,255,.48);
+}
+
+/* ---------- 1. PLOT BACKGROUND & BAR HOVER ------------------- */
+.stPlotlyChart div.js-plotly-plot .plotly,
+.stPlotlyChart .hoverlayer{ background:transparent!important }
+
+.stPlotlyChart .bar:hover{
+  filter:brightness(1.15);
+  transition:filter .15s ease;
+}
+
+/* ---------- 2. WORD-BY-WORD INTRO  --------------------------- */
+@keyframes fadeWord{
+  from {opacity:0; transform:translateY(4px)}
+  to   {opacity:1; transform:translateY(0)}
+}
+
+.type-word{
+  display:inline-block;                 /* un mot = un bloc → jamais coupé */
+  opacity:0;
+  animation:fadeWord .3s forwards ease-out;
+}
+
+/* bloc central + description */
+.db-hero        { max-width:820px; margin:0 auto; text-align:center }
+.db-description{
+  margin-top:1rem;
+  font:600 1.05rem/1.45 system-ui;      /* un peu plus grand + gras */
+  text-shadow:0 1px 3px rgba(0,0,0,.25);
+  word-break:normal; overflow-wrap:normal; hyphens:none;  /* anti-coupure */
+}
+
 /* -------------------------------------------------
-   CCF Website · database.css
-   Two pill buttons mirroring the CTA gradient
+   GLASS CTA buttons (works for <a> ou st.button)
    ------------------------------------------------- */
 
-:root {
-  --cta-grad-1: #f0f1f2;
-  --cta-grad-2: #41626a;
-  --cta-text:   #000000;
+:root{
+  --ccf-text:#000;
+  --glass-bg:rgba(255,255,255,.34);
+  --glass-bg-h:rgba(255,255,255,.48);
 }
 
-.filter-btn,
-button[data-baseweb="button"] {           /* overrides Streamlit btn */
-  border: none !important;
-  border-radius: 999px !important;
-  background: linear-gradient(135deg,var(--cta-grad-1),var(--cta-grad-2)) !important;
-  color: var(--cta-text) !important;
-  font-weight: 600 !important;
-  padding: 0.7rem 1.6rem !important;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.18) !important;
-  transition: transform .25s ease, box-shadow .25s ease;
+@keyframes fadeIn{from{opacity:0} to{opacity:1}}
+@keyframes fadeWord{from{opacity:0;transform:translateY(4px)}
+                    to  {opacity:1;transform:translateY(0)}}
+
+.db-btn-row{
+  display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;
+  margin:2rem 0 2.4rem;opacity:0;
+  animation:fadeIn .8s ease-out var(--btn-delay,0s) forwards;
 }
 
-button[data-baseweb="button"]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,.25);
+.db-cta-btn{
+  min-width:220px;padding:.6rem 1.6rem;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  white-space:nowrap;
+  background:var(--glass-bg);backdrop-filter:blur(5px);
+  color:var(--ccf-text)!important;font:600 1rem/1 system-ui;
+  text-decoration:none!important;box-shadow:0 4px 12px rgba(0,0,0,.25);
+  transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+}
+.db-cta-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+  background:var(--glass-bg-h);
 }
 
-.stPlotlyChart div.js-plotly-plot .plotly,
-.stPlotlyChart .hoverlayer {
-  background: transparent !important;
-}
+.db-btn-row > a.db-cta-btn{ margin:0 .6rem; } 
 
-/* little grow on bar hover */
-.stPlotlyChart .bar:hover {
-  filter: brightness(1.15);
-  transition: filter .15s ease;
+/* titre centré au-dessus du graphique */
+.db-chart-title{
+  text-align:center;
+  margin:1.6rem 0 1.2rem;
+  font:700 1.4rem/1.3 system-ui;
 }
