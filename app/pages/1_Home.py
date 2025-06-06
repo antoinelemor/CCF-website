@@ -43,6 +43,7 @@ css_content = css_file.read_text(encoding="utf-8")
 logo_bytes = logo_file.read_bytes()
 logo_url = "data:image/jpg;base64," + base64.b64encode(logo_bytes).decode()
 
+
 # HTML template with placeholder
 HTML = f"""
 <section class="hero">
