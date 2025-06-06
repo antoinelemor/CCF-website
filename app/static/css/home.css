@@ -12,8 +12,8 @@
 /* ----------  0. GLOBAL PALETTE  -------------------------------- */
 :root {
   --ccf-beige:   #ceccbd;
-  --cta-grad-1:  #ff7b7b;   /* coral  → gold */
-  --cta-grad-2:  #ffb347;
+  --cta-grad-1:  #f0f1f2;   /* bleu  → blanc */
+  --cta-grad-2:  #41626a;
 }
 
 /* ----------  1. PAGE CHROME (header, sidebar, etc.) ------------ */

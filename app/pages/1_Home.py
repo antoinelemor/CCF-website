@@ -36,7 +36,7 @@ import base64
 from app.components import navbar
 
 # ────────── 3. NAVBAR ──────────
-navbar.navbar(active="Home")
+navbar(active="Home")  
 
 # ────────── 4. CHEMINS & CHARGEMENT DES ASSETS ──────────
 BASE       = Path(__file__).resolve().parents[1]
