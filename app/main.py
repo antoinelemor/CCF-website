@@ -1,7 +1,13 @@
+# app/main.py  (entièrement réécrit)
+
 import streamlit as st
 
-# facultatif : config minimale
-st.set_page_config(page_title="CCF – Home", page_icon="🌎", layout="centered")
+st.set_page_config(
+    page_title="CCF – Home",
+    page_icon="🌎",
+    layout="centered",
+    initial_sidebar_state="collapsed"   # ← volet fermé par défaut
+)
 
-# redirige vers la page d'accueil multipage
+# Redirige immédiatement vers la vraie page d’accueil
 st.switch_page("pages/1_Home.py")
