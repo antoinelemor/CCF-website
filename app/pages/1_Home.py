@@ -31,10 +31,17 @@ from __future__ import annotations
 
 import base64
 from pathlib import Path
+import sys                       # ← déjà présent, garde-le
 from typing import List, Dict
 
-import streamlit as st
+# << bloc ROOT ⬇️ ajouté ici >>
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from app.components.navbar import navbar
+import streamlit as st
+
 
 # ------------------------------------------------------------------ #
 # 1. Streamlit page configuration                                    #
