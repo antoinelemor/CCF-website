@@ -30,6 +30,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+from app.components import navbar
+navbar(active="Home")
+
 # ────────── 2. IMPORTS ──────────
 from pathlib import Path
 import base64
@@ -77,7 +80,5 @@ HTML = f"""
 """
 
 # ────────── 7. RENDU ──────────
-st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)  
+st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
 st.markdown(HTML, unsafe_allow_html=True)
-from app.components import navbar
-navbar(active="Home")
