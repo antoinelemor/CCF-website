@@ -61,13 +61,26 @@ def navbar(active: str = "Home") -> None:
         <style>
         .navbar{
             display:flex;
+            flex-wrap:wrap;           /* <-- retour à la ligne */
             gap:1rem;
             justify-content:center;
             margin:1.5rem 0 2rem;
+            padding:0 0.5rem;        /* petit espace aux bords */
         }
-        /* Highlight current page */
+        /* Bouton actif */
         .navbar .active{
             filter:brightness(0.85);
+        }
+
+        /* -------- Mobile tweaks -------- */
+        @media (max-width: 500px){
+          .navbar{
+            gap:0.6rem;
+          }
+          .navbar .cta-btn{
+            padding:0.55rem 1rem;
+            font-size:0.9rem;
+          }
         }
         </style>
         """,
