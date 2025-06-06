@@ -1,0 +1,38 @@
+/* -------------------------------------------------
+   CCF Website · database.css
+   Two pill buttons mirroring the CTA gradient
+   ------------------------------------------------- */
+
+:root {
+  --cta-grad-1: #f0f1f2;
+  --cta-grad-2: #41626a;
+  --cta-text:   #000000;
+}
+
+.filter-btn,
+button[data-baseweb="button"] {           /* overrides Streamlit btn */
+  border: none !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg,var(--cta-grad-1),var(--cta-grad-2)) !important;
+  color: var(--cta-text) !important;
+  font-weight: 600 !important;
+  padding: 0.7rem 1.6rem !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18) !important;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+button[data-baseweb="button"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.25);
+}
+
+.stPlotlyChart div.js-plotly-plot .plotly,
+.stPlotlyChart .hoverlayer {
+  background: transparent !important;
+}
+
+/* little grow on bar hover */
+.stPlotlyChart .bar:hover {
+  filter: brightness(1.15);
+  transition: filter .15s ease;
+}
