@@ -33,10 +33,7 @@ st.set_page_config(
 # ────────── 2. IMPORTS ──────────
 from pathlib import Path
 import base64
-from app.components import navbar
 
-# ────────── 3. NAVBAR ──────────
-navbar(active="Home")  
 
 # ────────── 4. CHEMINS & CHARGEMENT DES ASSETS ──────────
 BASE       = Path(__file__).resolve().parents[1]
@@ -80,6 +77,7 @@ HTML = f"""
 """
 
 # ────────── 7. RENDU ──────────
-st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)  
 st.markdown(HTML, unsafe_allow_html=True)
-
+from app.components import navbar
+navbar(active="Home")
