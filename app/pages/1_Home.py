@@ -12,6 +12,9 @@
 Run:
     streamlit run app/pages/1_Home.py
 """
+# ────────── 0. bootstrap  (do NOT move) ──────────
+from ..bootstrap import * 
+
 # ────────── 1. CONFIG (doit précéder tout le reste) ──────────
 import streamlit as st
 st.set_page_config(
