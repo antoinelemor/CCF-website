@@ -149,10 +149,9 @@ HTML_HERO = f"""
 
   <!-- CTA buttons -->
   <div class="button-row">
-    <a href="/Home"      class="cta-btn" target="_self">Home</a>
-    <a href="/Database"  class="cta-btn" target="_self">The Database</a>
-    <a href="/Idea"      class="cta-btn" target="_self">Project Idea</a>
-    <a href="/Analysis"  class="cta-btn" target="_self">Some Analysis</a>
+    <a href="/Database" class="cta-btn" target="_self">The Database</a>
+    <a href="/Idea"     class="cta-btn" target="_self">Project Idea</a>
+    <a href="/Analysis" class="cta-btn" target="_self">Some Analysis</a>
   </div>
 
   <!-- Project members -->
