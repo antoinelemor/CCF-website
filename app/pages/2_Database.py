@@ -36,10 +36,10 @@ title_html = "".join(
     for i, w in enumerate(TITLE_WORDS)
 )
 
-INTRO = ("We exhaustively collected more than 250 000 news articles from "
-         "20 major Canadian newspapers, extracting full texts and rich metadata. "
+INTRO = ("We exhaustively collected more than 250 000 news articles since 1978 from "
+         "20 major Canadian newspapers, extracting full texts and metadata. "
          "Below you can explore the database structure – the outlets and how "
-         "article volume evolved over time. Enjoy!")
+         "article volume evolves over time. Enjoy!")
 intro_start = BASE_DELAY + len(TITLE_WORDS)*WORD_MS + 200
 intro_html = "".join(
     f'<span class="type-word" '

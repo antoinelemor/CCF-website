@@ -122,13 +122,13 @@ def build_member_card(member: Dict[str, str]) -> str:
 # 4. Animated one-sentence description                               #
 # ------------------------------------------------------------------ #
 DESC = (
-    "With 250,000 Canadian news articles and advanced machine-learning "
+    "With 250,000 Canadian news articles since 1978 and advanced machine-learning "
     "techniques, the CCF Project examines the evolution of climate-change "
-    "media coverage across decades, regions, and outlets, revealing the "
-    "determinants shaping public understanding over time."
+    "media coverage across decades, regions, and outlets throughout Canada to better understand the "
+    "determinants shaping public perceptions of climate change over time."
 )
 WORD_SPANS = "".join(
-    f'<span class="type-word" style="animation-delay:{4.5 + i * 0.12:.2f}s">'
+    f'<span class="type-word" style="animation-delay:{2 + i * 0.12:.2f}s">'
     f"{w}&nbsp;</span>"
     for i, w in enumerate(DESC.split())
 )
