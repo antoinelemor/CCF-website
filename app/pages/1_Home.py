@@ -12,8 +12,14 @@
 Run:
     streamlit run app/pages/1_Home.py
 """
-# ────────── 0. bootstrap  (do NOT move) ──────────
-from ..bootstrap import * 
+# --- make project root importable ---------------------------------
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[2]    # dossier racine du dépôt
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+# ------------------------------------------------------------------
+
 
 # ────────── 1. CONFIG (doit précéder tout le reste) ──────────
 import streamlit as st
@@ -27,8 +33,7 @@ st.set_page_config(
 # ────────── 2. IMPORTS ──────────
 from pathlib import Path
 import base64
-from ..components import navbar
-
+from app.components import navbar
 
 # ────────── 3. NAVBAR ──────────
 navbar.navbar(active="Home")
