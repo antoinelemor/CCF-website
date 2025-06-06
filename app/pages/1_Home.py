@@ -20,7 +20,6 @@ Run:
 
 from pathlib import Path
 import streamlit as st
-from streamlit.components.v1 import html
 
 # ────────── config ──────────
 st.set_page_config(page_title="CCF – Home", page_icon="🌎", layout="centered")
@@ -40,11 +39,10 @@ if not (css_file.exists() and logo_file.exists()):
 
 # read CSS
 css_content = css_file.read_text(encoding="utf-8")
-logo_url = "/app/static/assets/CCF_icone.jpg"  # Streamlit serves this path automatically
+logo_url = "app/static/assets/CCF_icone.jpg"  # Streamlit serves this path automatically
 
 # HTML template with placeholder
 HTML = f"""
-<style>{css_content}</style>
 <section class="hero">
    <img src="{logo_url}" class="bg-img" />
    <h1 class="tagline">Welcome to the CCF Project</h1>
@@ -56,7 +54,8 @@ HTML = f"""
 </section>
 """
 
-html(HTML, height=0, scrolling=False)
+st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+st.markdown(HTML, unsafe_allow_html=True)
 
 # ────────── optionally show below-hero section ──────────
 page = st.query_params.get("page", "home")
@@ -70,3 +69,4 @@ elif page == "idea":
 elif page == "analysis":
     st.header("Some Analysis")
     st.write("Teaser charts or metrics coming soon …")
+
