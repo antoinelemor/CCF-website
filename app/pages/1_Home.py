@@ -24,7 +24,8 @@ st.set_page_config(
 # ────────── 2. IMPORTS ──────────
 from pathlib import Path
 import base64
-from app.components import navbar  # paquet interne (navbar horizontale)
+from ..components import navbar
+
 
 # ────────── 3. NAVBAR ──────────
 navbar.navbar(active="Home")
