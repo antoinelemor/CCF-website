@@ -76,13 +76,12 @@ media_start = (ANIM["tagline_wait"] + ANIM["tagline_fade"]
                + ANIM["desc_wait"]  + ANIM["word_step"] * len(DESC.split())
                + ANIM["cta_wait"]   + ANIM["team_wait"] + 0.4)
 
-# ── placement des logos ─────────────────────────────────────────────
-COLS, ROWS = 5, 6        # 5 × 6 cases ⇒ recouvre la partie haute
-MARGIN_X   = 10          # %  ≥ ½ logo (60 px) sur un mobile 360 px
-MARGIN_Y   = 4           # un peu moins de marge verticale
-HOLE_R2    = 18**2       # disque central plus petit
-JITTER     = .35         # ±35 % du pas pour casser la grille
-
+# ── paramètres de placement ────────────────────────────────────────
+COLS, ROWS = 5, 5      # 25 cases → répartition verticale + homogène
+MARGIN_X   = 8         # %  (≥ demi-largeur max d’un logo sur mobile)
+MARGIN_Y   = 6
+HOLE_R2    = 20**2     # disque central un peu plus petit (logo CCF + tagline)
+JITTER     = .30       # léger aléa pour casser la grille
 
 
 rnd = random.Random(42)
@@ -90,12 +89,7 @@ rnd = random.Random(42)
 # centres de chaque case
 step_x = (100 - 2*MARGIN_X) / COLS
 step_y = (100 - 2*MARGIN_Y) / ROWS
-# centres de chaque case (on mélange *par rangée*)
-cells = []
-for r in range(ROWS):                 # r = 0 (top) … 5 (bottom)
-    row = [(c, r) for c in range(COLS)]
-    rnd.shuffle(row)                  # ordre pseudo-aléatoire dans la rangée
-    cells.extend(row)                 # mais la rangée 0 passe en premier
+cells  = [(c, r) for r in range(ROWS) for c in range(COLS)]
 rnd.shuffle(cells)                 # ordre pseudo-aléatoire reproductible
 
 positions: list[tuple[float, float]] = []
