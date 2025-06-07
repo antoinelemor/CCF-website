@@ -77,33 +77,35 @@ media_start = (ANIM["tagline_wait"] + ANIM["tagline_fade"]
                + ANIM["cta_wait"]   + ANIM["team_wait"] + 0.4)
 
 # ── paramètres de placement ────────────────────────────────────────
-COLS, ROWS = 6, 5          # ⇽ 5 rangées → une bande supplémentaire en haut
-MARGIN_X   = 6             # %  garde les logos bien visibles
-MARGIN_Y   = 4             # %  marge haute/basse plus fine
-HOLE_R2    = 20**2         # 20 %  (on réduit un peu le disque central)
-JITTER     = .25
+COLS, ROWS = 5, 5      # 25 cases → répartition verticale + homogène
+MARGIN_X   = 8         # %  (≥ demi-largeur max d’un logo sur mobile)
+MARGIN_Y   = 6
+HOLE_R2    = 20**2     # disque central un peu plus petit (logo CCF + tagline)
+JITTER     = .30       # léger aléa pour casser la grille
+
+
 rnd = random.Random(42)
 
+# centres de chaque case
 step_x = (100 - 2*MARGIN_X) / COLS
 step_y = (100 - 2*MARGIN_Y) / ROWS
+cells  = [(c, r) for r in range(ROWS) for c in range(COLS)]
+rnd.shuffle(cells)                 # ordre pseudo-aléatoire reproductible
 
-# — on balaie ligne par ligne pour assurer qu’on commence par le haut — #
-cells = [(c, r) for r in range(ROWS) for c in range(COLS)]
-cells = [cell for r in range(ROWS)             # conserve l’ordre par rangée
-               for cell in rnd.sample([c for c in cells if c[1]==r], COLS)]
-
-positions = []
+positions: list[tuple[float, float]] = []
 for c, r in cells:
     if len(positions) == N:
         break
+    # centre théorique
     x = MARGIN_X + (c + 0.5) * step_x
     y = MARGIN_Y + (r + 0.5) * step_y
+    # évite le disque central (logo + tagline)
     if (x-50)**2 + (y-50)**2 < HOLE_R2:
         continue
+    # petit décalage aléatoire dans la case
     dx = rnd.uniform(-JITTER, JITTER) * step_x
     dy = rnd.uniform(-JITTER, JITTER) * step_y
     positions.append((x+dx, y+dy))
-
 
 if len(positions) < N:
     st.warning("Not enough cells outside centre - enlarge grid or reduce HOLE_R")
