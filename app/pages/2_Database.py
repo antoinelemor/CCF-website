@@ -59,23 +59,39 @@ view = st.session_state.view
 
 # ────────────────────────  banner of logos  ──────────────────────────
 def build_logo_banner() -> str:
-    """Return HTML for a looping banner of all media logos."""
-    imgs_html: list[str] = []
-    for img_path in sorted(MEDIA_IMG_DIR.iterdir()):
-        if not img_path.is_file():
+    """Retourne le HTML/CSS d’un ruban infini de logos."""
+    imgs: list[str] = []
+    for fp in sorted(MEDIA_IMG_DIR.iterdir()):
+        if not fp.is_file():
             continue
-        b64 = base64.b64encode(img_path.read_bytes()).decode()
-        ext = img_path.suffix.replace(".", "")
-        imgs_html.append(
-            f'<img src="data:image/{ext};base64,{b64}" alt="{img_path.stem} logo" />'
+        b64 = base64.b64encode(fp.read_bytes()).decode()
+        ext = fp.suffix.lstrip(".")
+        imgs.append(
+            f'<img src="data:image/{ext};base64,{b64}" '
+            f'alt="{fp.stem} logo" loading="lazy" />'
         )
-    # Duplicate once → loop seamless
-    track = "".join(imgs_html * 2)
+    track = "".join(imgs * 2)  # ← on colle la liste deux fois
     return f"""
+    <style>
+      /* largeur de la piste = 200 % → on décale de −50 % */
+      @keyframes scroll-x {{
+        from {{ transform:translateX(0) }}
+        to   {{ transform:translateX(-50%) }}
+      }}
+      .media-banner  {{ width:100%; overflow:hidden; padding:.4rem 0; }}
+      .banner-track {{ display:flex; gap:2.5rem;
+                       animation:scroll-x 28s linear infinite; }}
+      .banner-track img {{ height:60px; object-fit:contain;
+                           filter:grayscale(20%); opacity:.9; }}
+      /* pause au survol (optionnel) */
+      .media-banner:hover .banner-track {{ animation-play-state:paused }}
+    </style>
+
     <div class="media-banner">
       <div class="banner-track">{track}</div>
     </div>
     """
+
 
 st.markdown(build_logo_banner(), unsafe_allow_html=True)
 

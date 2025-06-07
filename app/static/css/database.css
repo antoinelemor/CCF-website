@@ -116,10 +116,7 @@ div.stButton > button:hover {
   padding:.4rem 0;
   margin-bottom:1.2rem;
 }
-.banner-track{
-  display:flex;gap:2.4rem;
-  animation:scroll-x 28s linear infinite;
-}
+
 .banner-track img{
   height:60px;                /* taille homogène */
   object-fit:contain;
@@ -127,8 +124,4 @@ div.stButton > button:hover {
   opacity:.9;
 }
 
-/* boucle horizontale */
-@keyframes scroll-x{
-  from{transform:translateX(0)}
-  to  {transform:translateX(-50%)}   /* 2× la liste → −50 % suffit */
-}
+
