@@ -11,8 +11,12 @@ hide_sidebar()
 
 
 import streamlit as st
-st.set_page_config(page_title="CCF – Analysis", page_icon="🌎",
-                   layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="CCF – Analysis",
+    page_icon="🌎",
+    layout="centered",
+    initial_sidebar_state="collapsed",   # ← ok
+)
 
 from app.components import navbar
 navbar(active="Analysis")  
