@@ -1,10 +1,11 @@
 """
-Navigation bar component (with centred translucent logo)
-========================================================
-• Keeps the original “glass” CTA buttons (class **.cta-btn** from *home.css*).
-• Automatically injects *home.css* on every non-Home page (safe if already loaded).
-• Adds the project logo **behind** the bar (opacity ≈ 0.15, centred, no clicks).
-• Bar stays hidden when `active="Home"`.
+Navigation bar component  – sticky version
+==========================================
+
+• Boutons = classe `.cta-btn` déjà définie dans *home.css*
+• Injecte *home.css* automatiquement (sauf sur la page Home)
+• Logo translucide centré derrière la barre
+• Barre fixe en haut quand on scrolle (position:sticky)
 
 Usage
 -----
@@ -15,9 +16,8 @@ from pathlib import Path
 import base64
 import streamlit as st
 
-
 # ------------------------------------------------------------------ #
-# 1 . Logical routes                                                 #
+# 1 . Pages                                                          #
 # ------------------------------------------------------------------ #
 LINKS = {
     "Home":     "/Home",
@@ -27,103 +27,105 @@ LINKS = {
 }
 
 # ------------------------------------------------------------------ #
-# 2 . Helpers                                                        #
+# 2 . Helpers                                                         #
 # ------------------------------------------------------------------ #
-ROOT = Path(__file__).resolve().parents[2]         # project root
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _inject_home_css() -> None:
-    """Load `app/static/css/home.css` once if not already present."""
-    css_file = ROOT / "app" / "static" / "css" / "home.css"
-    if css_file.exists() and "ccf-home-css" not in st.session_state:
+    """Inject *home.css* une seule fois (nécessaire pour .cta-btn)."""
+    css_path = ROOT / "app/static/css/home.css"
+    if css_path.exists() and "ccf-home-css" not in st.session_state:
         st.session_state["ccf-home-css"] = True
         st.markdown(
-            f"<style id='ccf-home-css'>{css_file.read_text(encoding='utf-8')}</style>",
+            f"<style id='ccf-home-css'>{css_path.read_text()}</style>",
             unsafe_allow_html=True,
         )
-    elif not css_file.exists():
-        st.warning("⚠️ home.css not found – navbar style may differ.")
 
 
-def _logo_base64() -> str | None:
-    """Return base64 string for the logo (or *None* if missing)."""
-    logo_path = ROOT / "app" / "static" / "assets" / "CCF_icone.png"
-    if not logo_path.exists():
-        return None
-    return base64.b64encode(logo_path.read_bytes()).decode()
+def _logo_b64() -> str | None:
+    path = ROOT / "app/static/assets/CCF_icone.png"
+    return None if not path.exists() else base64.b64encode(path.read_bytes()).decode()
 
 
 # ------------------------------------------------------------------ #
-# 3 . Main entry point                                               #
+# 3 . Composant principal                                             #
 # ------------------------------------------------------------------ #
 def navbar(active: str = "Home") -> None:
-    """Render the nav bar (hidden on the Home page)."""
+    """Affiche la barre de navigation (cachée sur la page Home)."""
     if active.lower() == "home":
-        return  # keep the landing hero perfectly clean
+        return
 
     _inject_home_css()
 
-    # ----------  extra CSS for the bar + logo  ----------
-    logo_b64 = _logo_base64()
-    logo_css = ""
-    logo_html = ""
-    if logo_b64:
-        logo_css = """
-        .navbar-wrapper{
-            position:relative;
-        }
-        .navbar-logo{
-            position:absolute;
-            top:50%;left:50%;
-            transform:translate(-50%,-50%);
-            width:110px;               /* adjust size here */
-            opacity:0.15;              /* transparency */
-            pointer-events:none;
-            user-select:none;
-        }
-        """
-        logo_html = (
-            f'<img src="data:image/jpg;base64,{logo_b64}" '
-            f'class="navbar-logo" alt="CCF logo" />'
-        )
+    # ——— logo translucide ———
+    logo = _logo_b64()
+    logo_html = (
+        f'<img src="data:image/png;base64,{logo}" class="navbar-logo" alt="CCF logo" />'
+        if logo else ""
+    )
 
+    # ——— CSS ———
     st.markdown(
         f"""
-        <style>
-        /* ----------------------------------------------- *
-           NAV BAR LAYOUT (it relies on .cta-btn from home.css)
-           ----------------------------------------------- */
-        .navbar{{display:flex;flex-wrap:wrap;gap:1rem;
-                 justify-content:center;margin:1.5rem 0 2rem;
-                 padding:0 .5rem;position:relative;z-index:1;}}
-        .navbar .active{{filter:brightness(0.85)}}
+<style>
+/* wrapper sticky + fond flouté léger ----------------------------- */
+.navbar-wrapper {{
+    position:sticky;           /* reste collé en haut */
+    top:0;                     /* point d’ancrage     */
+    z-index:100;               /* au-dessus du reste  */
+    backdrop-filter:blur(4px); /* glassy             */
+    margin:0;                  /* annule les marges  */
+    padding:.6rem 0;           /* espace intérieur   */
+}}
 
-        /* Mobile tweaks */
-        @media (max-width:500px){{
-          .navbar{{gap:.6rem}}
-          .navbar .cta-btn{{padding:.55rem 1rem;font-size:.9rem}}
-        }}
+/* contenu flex --------------------------------------------------- */
+.navbar {{
+    display:flex; flex-wrap:wrap; gap:1rem;
+    justify-content:center;
+    padding:0 .5rem;
+}}
 
-        {logo_css}
-        </style>
-        """,
+/* bouton actif légèrement atténué ------------------------------- */
+.navbar .active {{ filter:brightness(.85); }}
+
+/* logo translucide centré --------------------------------------- */
+.navbar-logo {{
+    position:absolute; inset:0; margin:auto;
+    width:110px; max-width:30vw;
+    opacity:.15; pointer-events:none; user-select:none;
+}}
+
+/* mobile tweaks -------------------------------------------------- */
+@media (max-width:500px) {{
+  .navbar {{ gap:.6rem }}
+  .navbar .cta-btn {{ padding:.55rem 1rem; font-size:.9rem }}
+}}
+
+/* évite que le contenu passe sous la barre ---------------------- */
+[data-testid="stAppViewContainer"] > div:first-child {{
+    padding-top:3.6rem;        /* ≈ hauteur barre */
+}}
+</style>
+""",
         unsafe_allow_html=True,
     )
 
-    # ----------  HTML structure  ----------
+    # ——— HTML des liens ———
     links_html = "".join(
-        f'<a class="cta-btn {"active" if name == active else ""}" '
-        f'href="{target}" target="_self">{name}</a>'
-        for name, target in LINKS.items()
+        f'<a class="cta-btn {"active" if name==active else ""}" '
+        f'href="{url}" target="_self">{name}</a>'
+        for name, url in LINKS.items()
     )
 
     st.markdown(
         f"""
-        <div class="navbar-wrapper">
-            {logo_html}                <!-- centred translucent logo -->
-            <nav class="navbar">{links_html}</nav>
-        </div>
-        """,
+<div class="navbar-wrapper">
+    {logo_html}
+    <nav class="navbar">
+        {links_html}
+    </nav>
+</div>
+""",
         unsafe_allow_html=True,
     )
-
