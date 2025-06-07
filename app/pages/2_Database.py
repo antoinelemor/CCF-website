@@ -39,7 +39,7 @@ st.set_page_config(page_title="CCF – Database",
 navbar(active="Database")
 hide_sidebar()
 
-for css in ("database.css",):          # virgule = tuple d’un seul élément
+for css in ("home.css", "database.css",):          # virgule = tuple d’un seul élément
     css_path = CSS_DIR / css
     if css_path.exists():
         st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
