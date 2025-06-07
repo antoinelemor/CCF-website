@@ -14,7 +14,7 @@ from pathlib import Path
 # /mount/src/ccf-website/app/pages/2_Database.py
 #   ↑            ↑            ↑
 #   pages ← app ← racine  → on monte de 3 niveaux
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))          # AUCUN import « app. » avant ceci !
 
 # ─────────────────── 2.  imports projet & tiers ───────────────────────
@@ -39,7 +39,7 @@ st.set_page_config(page_title="CCF – Database",
 navbar(active="Database")
 hide_sidebar()
 
-for css in ("home.css", "database.css"):
+for css in ("database.css",):          # virgule = tuple d’un seul élément
     css_path = CSS_DIR / css
     if css_path.exists():
         st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
