@@ -74,7 +74,7 @@ INTRO_DICT = {
     None: (
         "We exhaustively collected more than 250 000 news articles since 1978 "
         "from 20 major Canadian newspapers, extracting full texts and metadata. "
-        "Below you can explore the database structure – the outlets and how "
+        "Here, you can explore the database structure – the outlets and how "
         "article volume evolves over time. Enjoy!"
     ),
     "media": (
