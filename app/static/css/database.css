@@ -79,26 +79,26 @@
 /* empêche la coupure des mots pour toutes les descriptions */
 .db-description,
 .db-description.alt{ word-break:keep-all; overflow-wrap:normal; hyphens:none }
-
 /* Style the default Streamlit button to mimic .db-cta-btn */
 div.stButton > button {
-  min-width: 220px;
-  padding: 0.6rem 1.6rem;
-  border-radius: 999px;
-  background: var(--glass-bg);
-  color: var(--ccf-text);
-  font: 600 1rem/1 system-ui;
-  box-shadow: 0 4px 12px rgba(0,0,0,.25);
-  transition: transform .25s, box-shadow .25s, background .25s;
+    min-width: 180px; /* Reduced width to prevent overlap */
+    padding: 0.6rem 1.6rem;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    color: var(--ccf-text);
+    font: 600 1rem/1 system-ui;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    transition: transform .25s, box-shadow .25s, background .25s;
 }
 div.stButton > button:hover {
-  transform: translateY(-3px);
-  background: var(--glass-bg-h);
-  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    transform: translateY(-3px);
+    background: var(--glass-bg-h);
+    box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
 
-/* Center the button container */
+/* Center the button container and add increased spacing between buttons */
 .stButton {
-  display: flex;
-  justify-content: center;
+    display: flex;
+    justify-content: center;
+    gap: 2rem; /* Increased spacing to prevent overlap */
 }
