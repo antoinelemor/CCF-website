@@ -92,23 +92,34 @@ step_y = (100 - 2*MARGIN_Y) / ROWS
 cells  = [(c, r) for r in range(ROWS) for c in range(COLS)]
 rnd.shuffle(cells)                 # ordre pseudo-aléatoire reproductible
 
+# ---------------------------------------------------------
+# génération des positions en %  (≥ 4 logos entre 15 % et 30 %)
+# ---------------------------------------------------------
+TOP_BAND = (15, 30)      # % de hauteur
+NEEDED_TOP = 4           # on veut au moins 4 logos visibles là-haut
+
 positions: list[tuple[float, float]] = []
+top_slots: list[tuple[float, float]] = []
+
 for c, r in cells:
-    if len(positions) == N:
+    if len(positions) == N:          # déjà 20 → stop
         break
-    # centre théorique
     x = MARGIN_X + (c + 0.5) * step_x
     y = MARGIN_Y + (r + 0.5) * step_y
-    # évite le disque central (logo + tagline)
     if (x-50)**2 + (y-50)**2 < HOLE_R2:
-        continue
-    # petit décalage aléatoire dans la case
+        continue                     # trop près du centre
     dx = rnd.uniform(-JITTER, JITTER) * step_x
     dy = rnd.uniform(-JITTER, JITTER) * step_y
-    positions.append((x+dx, y+dy))
+    x, y = x + dx, y + dy
+    if TOP_BAND[0] <= y <= TOP_BAND[1] and len(top_slots) < NEEDED_TOP:
+        top_slots.append((x, y))     # on met de côté jusqu’à 4 logos « haut »
+    else:
+        positions.append((x, y))
 
-if len(positions) < N:
-    st.warning("Not enough cells outside centre - enlarge grid or reduce HOLE_R")
+# insère en tête les 4 positions « haut »
+positions = top_slots + positions
+positions = positions[:N]            # garde exactement 20 positions
+
 
 # ── HTML des logos ─────────────────────────────────────────────────
 media_imgs = []
