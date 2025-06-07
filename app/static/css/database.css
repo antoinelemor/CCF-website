@@ -22,12 +22,18 @@
 
 /* 3.  Intro blocs --------------------------------------------- */
 .db-hero{ max-width:820px; margin:0 auto; text-align:center }
-.db-title{ font-size:clamp(2rem,3vw+1rem,2.6rem);
-           font-weight:700; margin:0 0 1.2rem;
-           text-shadow:0 1px 4px rgba(0,0,0,.35) }
+.db-title{
+  text-align:center;                 /* ← nouvelle ligne */
+  font-size:clamp(2rem,3vw+1rem,2.6rem);
+  font-weight:700;
+  margin:0 0 1.2rem;
+  text-shadow:0 1px 4px rgba(0,0,0,.35);
+}
+
 
 .db-description,
 .db-description.alt{
+  text-align:center;                 /* ← nouvelle ligne */
   margin-top:1rem;
   font:600 1.05rem/1.45 system-ui;
   text-shadow:0 1px 3px rgba(0,0,0,.25);
@@ -101,4 +107,28 @@ div.stButton > button:hover {
     display: flex;
     justify-content: center;
     gap: 2rem; /* Increased spacing to prevent overlap */
+}
+
+/* =====  bandeau des logos  ===================================== */
+.media-banner{
+  width:100%;
+  overflow:hidden;
+  padding:.4rem 0;
+  margin-bottom:1.2rem;
+}
+.banner-track{
+  display:flex;gap:2.4rem;
+  animation:scroll-x 28s linear infinite;
+}
+.banner-track img{
+  height:60px;                /* taille homogène */
+  object-fit:contain;
+  filter:grayscale(20%);
+  opacity:.9;
+}
+
+/* boucle horizontale */
+@keyframes scroll-x{
+  from{transform:translateX(0)}
+  to  {transform:translateX(-50%)}   /* 2× la liste → −50 % suffit */
 }

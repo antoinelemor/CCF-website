@@ -1,203 +1,198 @@
 """
 Database page
-─────────────
-1) Animated title (first load only) + intro
-2) Two centred "glass" buttons (no page reload)
-3) Click => show ECharts chart in-place
+-------------
+1. Sticky navbar (component)
+2. Scrolling banner of outlet logos
+3. Title ▸ buttons ▸ description (word-by-word)
+4. ECharts in place – no full page reload
 """
-
 from __future__ import annotations
-import sys, json, html as esc
+import sys
 from pathlib import Path
+
+# ─────────────────── 1.  rendre la racine importable ──────────────────
+# /mount/src/ccf-website/app/pages/2_Database.py
+#   ↑            ↑            ↑
+#   pages ← app ← racine  → on monte de 3 niveaux
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))          # AUCUN import « app. » avant ceci !
+
+# ─────────────────── 2.  imports projet & tiers ───────────────────────
+from app.components.navbar import navbar
+from app.components.ui_utils import hide_sidebar
+
+import json, html as esc, base64
 import pandas as pd
 import streamlit as st
 from streamlit.components.v1 import html
-from app.components.navbar import navbar
-ROOT = Path(__file__).resolve().parents[2]   # dossier racine du projet
-if str(ROOT) not in sys.path:                # ← ajoute-le au PYTHONPATH
-    sys.path.insert(0, str(ROOT))
-from app.components.ui_utils import hide_sidebar
 
-# ─────────────────────────  CONSTANTS  ─────────────────────────
-AXES_WAIT, MEDIA_MS, TIME_MS = 400, 200, 3000   # ECharts animation delays
-TITLE_WORDS = ["The", "CCF", "Database"]     # for the animated title
-BASE, STEP = 0.30, 0.06                     # word-by-word delay for title+desc
+# ─────────────────── 3.  chemins & assets ─────────────────────────────
+ASSETS        = ROOT / "app/static/assets"
+MEDIA_IMG_DIR = ASSETS / "media"
+CSS_DIR       = ROOT  / "app/static/css"
 
-# ──────────────────────  BOILERPLATE SETUP  ────────────────────
-
-st.set_page_config(
-    page_title="CCF – Database",
-    page_icon="🌎",
-    layout="centered",
-    initial_sidebar_state="collapsed",
-)
+# ─────────────────── 4.  config Streamlit & CSS ───────────────────────
+st.set_page_config(page_title="CCF – Database",
+                   page_icon="🌎",
+                   layout="centered",
+                   initial_sidebar_state="collapsed")
 navbar(active="Database")
 hide_sidebar()
 
-# Load custom CSS
-for css_file in ("home.css", "database.css"):
-    st.markdown(
-        f"<style>{(ROOT / 'app' / 'static' / 'css' / css_file).read_text()}</style>",
-        unsafe_allow_html=True
-    )
+for css in ("home.css", "database.css"):
+    st.markdown(f"<style>{(CSS_DIR / css).read_text()}</style>",
+                unsafe_allow_html=True)
+    
+# ─────────────────── 5.  config Streamlit & CSS ───────────────────────
+st.set_page_config(page_title="CCF – Database",
+                   page_icon="🌎",
+                   layout="centered",
+                   initial_sidebar_state="collapsed")
+navbar(active="Database")
+hide_sidebar()
 
-# ─────────────────────────  STATE INIT  ────────────────────────
-# If "view" is not in session state, it's first load => animate the title.
+for css in ("home.css", "database.css"):
+    st.markdown(f"<style>{(CSS_DIR / css).read_text()}</style>",
+                unsafe_allow_html=True)
+
+# ─────────────────── 6.  constantes ──────────────────────────────────
+AXES_WAIT, MEDIA_MS, TIME_MS = 400, 200, 3000
+TITLE_WORDS = ["The", "CCF", "Database"]
+BASE, STEP  = 0.30, 0.06         # animation pas-à-pas
+
+# ─────────────────── 7.  init session state ───────────────────────────
 if "view" not in st.session_state:
-    st.session_state["view"] = None
+    st.session_state.view = None          # première visite
+view = st.session_state.view
 
-# ─────────────────────  BUTTONS (NO PAGE RELOAD)  ──────────────
-# Display two centered "glass" buttons. Clicking sets st.session_state["view"].
+# ────────────────────────  banner of logos  ──────────────────────────
+def build_logo_banner() -> str:
+    """Return HTML for a looping banner of all media logos."""
+    imgs_html: list[str] = []
+    for img_path in sorted(MEDIA_IMG_DIR.iterdir()):
+        if not img_path.is_file():
+            continue
+        b64 = base64.b64encode(img_path.read_bytes()).decode()
+        ext = img_path.suffix.replace(".", "")
+        imgs_html.append(
+            f'<img src="data:image/{ext};base64,{b64}" alt="{img_path.stem} logo" />'
+        )
+    # Duplicate once → loop seamless
+    track = "".join(imgs_html * 2)
+    return f"""
+    <div class="media-banner">
+      <div class="banner-track">{track}</div>
+    </div>
+    """
 
-# Container for centering them
-btn_container = st.container()
-with btn_container:
-    spacer, main_col, spacer2 = st.columns([1, 2, 1])
-    with main_col:
-        c1, c2 = st.columns([1, 1], gap="large")  # equal-width columns
-        with c1:
-            btn_media = st.button("Show data by media", key="btn_media")
-        with c2:
-            btn_time = st.button("Show articles over time", key="btn_time")
+st.markdown(build_logo_banner(), unsafe_allow_html=True)
 
-# Process button clicks (no page reload, but the script re-runs)
-if btn_media:
-    st.session_state["view"] = "media"
-elif btn_time:
-    st.session_state["view"] = "time"
+# ────────────────────────  TITLE  +  BUTTONS  +  DESC  ───────────────
+view = st.session_state.view
 
-view = st.session_state["view"]  # read the updated state
-
-# ─────────────────────  TEXTS / INTRO  ─────────────────────────
-# The descriptive text depends on the active view (None, "media", or "time").
-INTRO_DICT = {
-    None: (
-        "We exhaustively collected more than 250 000 news articles since 1978 "
-        "from 20 major Canadian newspapers, extracting full texts and metadata. "
-        "Here, you can explore the database structure – the outlets and how "
-        "article volume evolves over time. Enjoy!"
-    ),
-    "media": (
-        "We collected climate-change articles from 20 outlets representative of "
-        "the Canadian media landscape with the largest readership. The number of articles per media are "
-        "displayed below in descending order of article count."
-    ),
-    "time": (
-        "We gathered articles reaching as far back as "
-        "possible to build an historically exhaustive corpus of climate-change articles "
-        "for Canada."
-    ),
-}
-intro_text = INTRO_DICT[view]
-
-# ─────────────────────  HERO (TITLE + DESCRIPTION)  ────────────
-# 1) Title: animate if view=None (first page load), else static.
-if view is None:
-    # Animated title
+# — title (animated only once) ----------------------------------------
+if view is None:        # première visite ⇒ animé
     title_html = "".join(
-        f'<span class="type-word" style="animation-delay:{BASE + i*STEP:.2f}s">'
-        f"{word}&nbsp;</span>"
-        for i, word in enumerate(TITLE_WORDS)
+        f'<span class="type-word" style="animation-delay:{BASE+i*STEP:.2f}s">{w}&nbsp;</span>'
+        for i, w in enumerate(TITLE_WORDS)
     )
 else:
-    # Static title (user has clicked a button)
     title_html = " ".join(TITLE_WORDS)
 
-# 2) Description: always word-by-word. If view is None => slower start.
-desc_delay = BASE + 0.4 if view is None else 0.10
+st.markdown(f'<h1 class="db-title">{title_html}</h1>', unsafe_allow_html=True)
+
+# — buttons (centre + no reload) -------------------------------------
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    c1, c2 = st.columns(2, gap="large")
+    if c1.button("Show data by media"):
+        st.session_state.view = "media"
+        view = "media"
+    if c2.button("Show articles over time"):
+        st.session_state.view = "time"
+        view = "time"
+
+# — description text --------------------------------------------------
+INTRO = {
+    None: ("We exhaustively collected more than 250 000 news articles since 1978 "
+           "from 20 major Canadian newspapers, extracting full texts and metadata. "
+           "Explore the outlets and their article volume over time."),
+    "media": ("We collected climate‑change articles from 20 outlets representative "
+              "of the Canadian media landscape and with the largest readership. "
+              "Below they are ordered by article count."),
+    "time": ("We gathered articles reaching as far back as possible to build a corpus "
+             "that is both geographically and historically exhaustive across Canada."),
+}[view]
+
+delay0 = BASE + 0.40 if view is None else 0.10
 desc_html = "".join(
-    f'<span class="type-word" style="animation-delay:{desc_delay + i*STEP:.2f}s">'
-    f"{esc.escape(word)}&nbsp;</span>"
-    for i, word in enumerate(intro_text.split())
+    f'<span class="type-word" style="animation-delay:{delay0+i*STEP:.2f}s">'
+    f'{esc.escape(w)}&nbsp;</span>'
+    for i, w in enumerate(INTRO.split())
 )
+desc_cls = "db-description alt" if view else "db-description"
+st.markdown(f'<p class="{desc_cls}">{desc_html}</p>', unsafe_allow_html=True)
 
-# Light-grey & italic style if "media" or "time" (see .db-description.alt)
-desc_class = "db-description alt" if view else "db-description"
-
-st.markdown(
-    f"""
-<section class="db-hero">
-  <h1 class="db-title">{title_html}</h1>
-  <p class="{desc_class}">{desc_html}</p>
-</section>
-""",
-    unsafe_allow_html=True,
-)
-
-# ─────────────────────  LOAD DATA & SHOW CHART  ────────────────
-ASSETS = ROOT / "app" / "static" / "assets"
+# ────────────────────────  DATA & CHART  ─────────────────────────────
 media_df = pd.read_csv(ASSETS / "articles_by_media.csv")
 month_df = (
     pd.read_csv(ASSETS / "articles_by_month.csv")
-    .dropna(subset=["year", "month"])
-    .assign(
-        year_month=lambda df: pd.to_datetime(
-            df["year"].astype(int).astype(str) + "-"
-            + df["month"].astype(int).astype(str).str.zfill(2)
-        )
-    )
-    .sort_values("year_month")
+      .dropna(subset=["year", "month"])
+      # ①  on force year → int  (passe de 1978.0 → 1978)
+      .assign(year=lambda d: d["year"].astype(int),
+              month=lambda d: d["month"].astype(int))
+      # ②  on crée l’objet AAAA‑MM puis on ordonne
+      .assign(year_month=lambda d:
+              pd.to_datetime(d["year"].astype(str) + "-" +
+                             d["month"].astype(str).str.zfill(2)))
+      .sort_values("year_month")
 )
 
+
 if view:
-    # Chart title
-    if view == "media":
-        chart_title = "Articles by Media"
-    else:
-        chart_title = "Articles per Month"
+    st.markdown(
+        f"<h2 class='db-chart-title'>"
+        f"{'Articles by Media' if view=='media' else 'Articles per Month'}</h2>",
+        unsafe_allow_html=True,
+    )
 
-    st.markdown(f"<h2 class='db-chart-title'>{chart_title}</h2>", unsafe_allow_html=True)
-
-    # Build ECharts option
     if view == "media":
-        labels = media_df["media"].tolist()
-        values = media_df["n_articles"].tolist()
-        echarts_option = f"""{{
+        labs = media_df.media.tolist()
+        vals = media_df.n_articles.tolist()
+        option = f"""{{
           tooltip:{{trigger:'axis'}},
-          xAxis:{{type:'category',data:{json.dumps(labels)},axisLabel:{{rotate:35}}}},
+          xAxis:{{type:'category',data:{json.dumps(labs)},axisLabel:{{rotate:35}}}},
           yAxis:{{type:'value',name:'Articles'}},
-          series:[{{
-            type:'bar',
-            data:{json.dumps(values)},
+          series:[{{type:'bar',data:{json.dumps(vals)},
             itemStyle:{{color:{{type:'linear',x:0,y:0,x2:0,y2:1,
-              colorStops:[
-                {{offset:0,color:'#f0f1f2'}},
-                {{offset:1,color:'#41626a'}}
-              ]
-            }}}},
+              colorStops:[{{offset:0,color:'#f0f1f2'}},
+                          {{offset:1,color:'#41626a'}}]}}}},
             animationDelay:(i)=>{AXES_WAIT}+{MEDIA_MS}*i,
-            animationDuration:{MEDIA_MS}
-          }}]
+            animationDuration:{MEDIA_MS}}}]
         }}"""
     else:
-        labels = month_df["year_month"].dt.strftime("%Y-%m").tolist()
-        values = month_df["n_articles"].tolist()
-        echarts_option = f"""{{
+        labs = month_df.year_month.dt.strftime("%Y‑%m").tolist()
+        vals = month_df.n_articles.tolist()
+        option = f"""{{
           tooltip:{{trigger:'axis'}},
-          xAxis:{{type:'category',data:{json.dumps(labels)}}},
+          xAxis:{{type:'category',data:{json.dumps(labs)}}},
           yAxis:{{type:'value',name:'Articles'}},
-          series:[{{
-            type:'line',
-            data:{json.dumps(values)},
-            smooth:true,
-            symbol:'circle',
+          series:[{{type:'line',data:{json.dumps(vals)},smooth:true,symbol:'circle',
             lineStyle:{{width:3,color:'#41626a'}},
             areaStyle:{{color:'rgba(65,98,106,0.15)'}},
             animationDelay:(i)=>{AXES_WAIT}+{TIME_MS}*i,
-            animationDuration:{TIME_MS}
-          }}]
+            animationDuration:{TIME_MS}}}]
         }}"""
 
-    # Render ECharts in-place
     html(
         f"""
-        <div id="eplot" style="width:100%;max-width:900px;height:520px;margin:auto"></div>
-        <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-        <script>
-          const chart = echarts.init(document.getElementById('eplot'), null, {{renderer:'svg'}});
-          chart.setOption({echarts_option});
-          window.addEventListener('resize', () => chart.resize());
-        </script>
-        """,
-        height=560
+<div id="eplot" style="width:100%;max-width:900px;height:520px;margin:auto"></div>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+const chart = echarts.init(document.getElementById('eplot'), null, {{renderer:'svg'}});
+chart.setOption({option});
+window.addEventListener('resize', () => chart.resize());
+</script>
+""",
+        height=560,
     )
