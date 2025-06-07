@@ -138,12 +138,17 @@ TEAM: List[Dict[str, str]] = [
 ]
 
 def card(m: Dict[str, str]) -> str:
-    img = ("data:image/jpeg;base64,"
-           + base64.b64encode(m["photo"].read_bytes()).decode()
-           ) if m["photo"].exists() else ""
-    return (f'<div class="member"><img src="{img}" alt="">'
-            f'<a href="{m["url"]}" target="_blank" class="member-btn">'
-            f'{m["name"]}</a><p class="member-affil">{m["affil"]}</p></div>')
+    """Retourne la carte HTML d’un membre avec photo cliquable."""
+    if m["photo"].exists():
+        img_b64 = base64.b64encode(m["photo"].read_bytes()).decode()
+        img_tag = (f'<a href="{m["url"]}" target="_blank" class="member-photo">'
+                   f'<img src="data:image/jpeg;base64,{img_b64}" alt="{m["name"]} photo"></a>')
+    else:
+        img_tag = ""
+    return (f'<div class="member">{img_tag}'
+            f'<a href="{m["url"]}" target="_blank" class="member-btn">{m["name"]}</a>'
+            f'<p class="member-affil">{m["affil"]}</p></div>')
+
 
 
 # ------------------------------------------------------------------ #

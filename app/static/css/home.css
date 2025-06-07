@@ -173,4 +173,25 @@ body,.stApp,header,footer,
   filter:brightness(.8) contrast(1.1);
 }
 
+@media (max-width: 599px){
+  .button-row{
+    flex-wrap: wrap;          /* autorise un retour à la ligne */
+    gap: .8rem;               /* espace réduit entre les boutons */
+    padding: 0 1rem;          /* petite marge interne */
+    justify-content: center;  /* centrage même sur 2 lignes */
+  }
+  .cta-btn{
+    flex: 1 1 auto;           /* permet de se comprimer un peu */
+    padding: .75rem 1.25rem;  /* padding horizontal + étroit */
+    white-space: nowrap;      /* évite la coupure “The\nDatabase” */
+  }
+}
+
+.member-photo img{
+  transition: .3s transform ease-out;
+}
+.member-photo:hover img{
+  transform: scale(1.05);
+}
+
 
