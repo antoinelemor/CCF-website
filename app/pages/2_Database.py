@@ -30,18 +30,6 @@ from streamlit.components.v1 import html
 ASSETS        = ROOT / "app/static/assets"
 MEDIA_IMG_DIR = ASSETS / "media"
 CSS_DIR       = ROOT  / "app/static/css"
-
-# ─────────────────── 4.  config Streamlit & CSS ───────────────────────
-st.set_page_config(page_title="CCF – Database",
-                   page_icon="🌎",
-                   layout="centered",
-                   initial_sidebar_state="collapsed")
-navbar(active="Database")
-hide_sidebar()
-
-for css in ("home.css", "database.css"):
-    st.markdown(f"<style>{(CSS_DIR / css).read_text()}</style>",
-                unsafe_allow_html=True)
     
 # ─────────────────── 5.  config Streamlit & CSS ───────────────────────
 st.set_page_config(page_title="CCF – Database",
@@ -52,8 +40,12 @@ navbar(active="Database")
 hide_sidebar()
 
 for css in ("home.css", "database.css"):
-    st.markdown(f"<style>{(CSS_DIR / css).read_text()}</style>",
-                unsafe_allow_html=True)
+    css_path = CSS_DIR / css
+    if css_path.exists():
+        st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
+    else:
+        st.warning(f"CSS file not found: {css_path}")
+
 
 # ─────────────────── 6.  constantes ──────────────────────────────────
 AXES_WAIT, MEDIA_MS, TIME_MS = 400, 200, 3000
