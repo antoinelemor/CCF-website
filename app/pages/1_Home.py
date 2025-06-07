@@ -15,6 +15,9 @@ import base64, sys, html as esc
 from pathlib import Path
 from typing import List, Dict
 import streamlit as st
+ROOT = Path(__file__).resolve().parents[2]   # dossier racine du projet
+if str(ROOT) not in sys.path:                # ← ajoute-le au PYTHONPATH
+    sys.path.insert(0, str(ROOT))
 from app.components.navbar import navbar     # project import
 from app.components.ui_utils import hide_sidebar
 
@@ -36,7 +39,6 @@ ANIM = dict(                 # second unit everywhere
 # ------------------------------------------------------------------ #
 # 1 .  Page configuration & assets                                   #
 # ------------------------------------------------------------------ #
-ROOT      = Path(__file__).resolve().parents[2]
 BASE_DIR  = Path(__file__).resolve().parents[1]
 CSS_FILE  = BASE_DIR / "static/css/home.css"
 LOGO_FILE = BASE_DIR / "static/assets/CCF_icone.png"

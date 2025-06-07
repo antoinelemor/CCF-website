@@ -13,6 +13,9 @@ import pandas as pd
 import streamlit as st
 from streamlit.components.v1 import html
 from app.components.navbar import navbar
+ROOT = Path(__file__).resolve().parents[2]   # dossier racine du projet
+if str(ROOT) not in sys.path:                # ← ajoute-le au PYTHONPATH
+    sys.path.insert(0, str(ROOT))
 from app.components.ui_utils import hide_sidebar
 
 # ─────────────────────────  CONSTANTS  ─────────────────────────
@@ -21,9 +24,6 @@ TITLE_WORDS = ["The", "CCF", "Database"]     # for the animated title
 BASE, STEP = 0.30, 0.06                     # word-by-word delay for title+desc
 
 # ──────────────────────  BOILERPLATE SETUP  ────────────────────
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 st.set_page_config(
     page_title="CCF – Database",
