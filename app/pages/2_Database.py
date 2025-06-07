@@ -13,6 +13,8 @@ import pandas as pd
 import streamlit as st
 from streamlit.components.v1 import html
 from app.components.navbar import navbar
+from app.components.ui_utils import hide_sidebar
+
 
 # ─────────────────────────  CONSTANTS  ─────────────────────────
 AXES_WAIT, MEDIA_MS, TIME_MS = 400, 90, 60   # chart animation delays
@@ -31,6 +33,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 navbar(active="Database")
+hide_sidebar()   
 
 # Load custom CSS
 for css_file in ("home.css", "database.css"):
