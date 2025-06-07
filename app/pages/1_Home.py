@@ -1,169 +1,148 @@
 """
-PROJECT
--------
-CCF-Website
+CCF ‑ Home page
+===============
 
-TITLE
------
-1_Home.py – Streamlit Home Page
-
-MAIN OBJECTIVE
---------------
-Render a hero section with:
-    • blurred logo background
-    • animated one-sentence description
-    • call-to-action buttons
-    • “Project Members” title + portraits (progressive fade-in)
-
-A top navigation bar is injected (hidden on Home by the component logic).
+All animation timings are now **centralised** in the `ANIM` dict below.
+Tweak only these numbers to speed‑up / slow‑down the whole intro.
 
 Dependencies
 ------------
-- streamlit ≥ 1.33
-- pathlib    (std lib)
-- base64     (std lib)
-
-Author
-------
-Antoine Lemor
+streamlit ≥ 1.33
 """
+
 from __future__ import annotations
-
-import base64
+import base64, sys, html as esc
 from pathlib import Path
-import sys                       # ← déjà présent, garde-le
 from typing import List, Dict
-
-# << bloc ROOT ⬇️ ajouté ici >>
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from app.components.navbar import navbar
 import streamlit as st
+from app.components.navbar import navbar     # project import
+from app.components.ui_utils import hide_sidebar
 
 
 # ------------------------------------------------------------------ #
-# 1. Streamlit page configuration                                    #
+# 0 .  PARAMETERS  (edit here)                                       #
 # ------------------------------------------------------------------ #
-st.set_page_config(
-    page_title="CCF – Home",
-    page_icon="🌎",
-    layout="centered",
-    initial_sidebar_state="collapsed",
+ANIM = dict(                 # second unit everywhere
+    logo_fade    = 1.0,      # duration of the BG‑logo “appear‑then‑dim”
+    tagline_wait = 1.0,      # delay before tagline starts fading‑in
+    tagline_fade = 1.2,      # duration of tagline fade‑in
+    desc_wait    = 1.2,      # delay before description starts
+    word_step    = 0.10,     # gap between successive words
+    cta_wait     = 0.2,      # delay *after* desc until CTA buttons
+    team_wait    = 0.2,      # delay after CTA until team title
+    member_step  = 0.25,     # gap between member cards
 )
 
-# Inject (but hidden) navbar
-navbar(active="Home")
+# ------------------------------------------------------------------ #
+# 1 .  Page configuration & assets                                   #
+# ------------------------------------------------------------------ #
+ROOT      = Path(__file__).resolve().parents[2]
+BASE_DIR  = Path(__file__).resolve().parents[1]
+CSS_FILE  = BASE_DIR / "static/css/home.css"
+LOGO_FILE = BASE_DIR / "static/assets/CCF_icone.png"
 
-# ------------------------------------------------------------------ #
-# 2. Paths & external assets                                         #
-# ------------------------------------------------------------------ #
-BASE_DIR = Path(__file__).resolve().parents[1]
-CSS_FILE = BASE_DIR / "static" / "css" / "home.css"
-LOGO_FILE = BASE_DIR / "static" / "assets" / "CCF_icone.jpg"
+st.set_page_config("CCF – Home", "🌎", layout="centered",
+                   initial_sidebar_state="collapsed")
+navbar(active="Home")
+hide_sidebar()
 
 if not (CSS_FILE.exists() and LOGO_FILE.exists()):
-    st.error("Missing CSS or logo under app/static/")
-    st.stop()
+    st.error("Missing CSS or logo in app/static/"); st.stop()
 
-css_content = CSS_FILE.read_text(encoding="utf-8")
-logo_b64 = base64.b64encode(LOGO_FILE.read_bytes()).decode()
-logo_url = f"data:image/jpg;base64,{logo_b64}"
+# Base‑64 logo
+logo_url = (
+    "data:image/png;base64,"
+    + base64.b64encode(LOGO_FILE.read_bytes()).decode()
+)
+
+# Inject CSS **once**, passing animation variables through CSS custom props
+css_vars = ";".join(f"--{k}:{v}s" for k, v in ANIM.items())
+st.markdown(
+    f"<style>:root{{{css_vars}}}{CSS_FILE.read_text(encoding='utf‑8')}</style>",
+    unsafe_allow_html=True,
+)
 
 # ------------------------------------------------------------------ #
-# 3. Project members data & helper                                   #
+# 2 .  Team members                                                  #
 # ------------------------------------------------------------------ #
 TEAM: List[Dict[str, str]] = [
     {
         "name": "Alizée Pillod",
         "affil": "Université de Montréal",
-        "photo": BASE_DIR / "static" / "assets" / "alizee.jpg",
+        "photo": BASE_DIR / "static/assets/alizee.jpg",
         "url": "https://alizeepillod.com/",
     },
     {
         "name": "Antoine Lemor",
         "affil": "Université de Sherbrooke",
-        "photo": BASE_DIR / "static" / "assets" / "antoine.jpg",
+        "photo": BASE_DIR / "static/assets/antoine.jpg",
         "url": "https://antoinelemor.github.io/",
     },
     {
         "name": "Matthew Taylor",
         "affil": "Université de Montréal",
-        "photo": BASE_DIR / "static" / "assets" / "matthew.jpeg",
+        "photo": BASE_DIR / "static/assets/matthew.jpeg",
         "url": "https://www.chairedemocratie.com/members/taylor-matthew/",
     },
 ]
 
 
-def build_member_card(member: Dict[str, str]) -> str:
-    """Return HTML for a single team member."""
-    if not member["photo"].exists():
-        st.warning(f"Photo missing: {member['photo'].name}")
+def member_card(m: Dict[str, str]) -> str:
+    if not m["photo"].exists():
         img_src = ""
     else:
         img_src = (
             "data:image/jpeg;base64,"
-            + base64.b64encode(member["photo"].read_bytes()).decode()
+            + base64.b64encode(m["photo"].read_bytes()).decode()
         )
-
     return (
         '<div class="member">'
-        f'  <img src="{img_src}" alt="{member["name"]} portrait" />'
-        f'  <a href="{member["url"]}" target="_blank" rel="noopener" '
-        f'     class="member-btn">{member["name"]}</a>'
-        f'  <p class="member-affil">{member["affil"]}</p>'
+        f'  <img src="{img_src}" alt="{m["name"]} portrait" />'
+        f'  <a href="{m["url"]}" target="_blank" rel="noopener" '
+        f'     class="member-btn">{m["name"]}</a>'
+        f'  <p class="member-affil">{m["affil"]}</p>'
         '</div>'
     )
 
 
-
 # ------------------------------------------------------------------ #
-# 4. Animated one-sentence description                               #
+# 3 .  Animated description (word‑by‑word)                           #
 # ------------------------------------------------------------------ #
 DESC = (
-    "With 250,000 Canadian news articles since 1978 and advanced machine-learning "
-    "techniques, the CCF Project examines the evolution of climate-change "
-    "media coverage across decades, regions, and outlets throughout Canada to better understand the "
-    "determinants shaping public perceptions of climate change over time."
+    "With 250,000 Canadian news articles since 1978 and advanced machine‑"
+    "learning techniques, the CCF Project analyses how national climate‑"
+    "change media coverage has evolved across decades, regions and outlets."
 )
+
 WORD_SPANS = "".join(
-    f'<span class="type-word" style="animation-delay:{2 + i * 0.12:.2f}s">'
-    f"{w}&nbsp;</span>"
+    f'<span class="type-word" style="animation-delay:{ANIM["desc_wait"] + i*ANIM["word_step"]:.2f}s">'
+    f"{esc.escape(w)}&nbsp;</span>"
     for i, w in enumerate(DESC.split())
 )
 
 # ------------------------------------------------------------------ #
-# 5. Hero section HTML                                               #
+# 4 .  Final HTML / render                                           #
 # ------------------------------------------------------------------ #
-HTML_HERO = f"""
+st.markdown(
+    f"""
 <section class="hero">
-  <!-- Background logo -->
   <img src="{logo_url}" class="bg-img" />
 
-  <!-- Main headline -->
   <h1 class="tagline">Welcome to the CCF Project</h1>
 
-  <!-- Animated description -->
   <p class="description">{WORD_SPANS}</p>
 
-  <!-- CTA buttons -->
   <div class="button-row">
     <a href="/Database" class="cta-btn" target="_self">The Database</a>
     <a href="/Idea"     class="cta-btn" target="_self">Project Idea</a>
     <a href="/Analysis" class="cta-btn" target="_self">Some Analysis</a>
   </div>
 
-  <!-- Project members -->
   <h2 class="team-title">Project Members</h2>
   <div class="team-row">
-    {''.join(build_member_card(m) for m in TEAM)}
+    {''.join(member_card(m) for m in TEAM)}
   </div>
 </section>
-"""
-
-# ------------------------------------------------------------------ #
-# 6. Render                                                          #
-# ------------------------------------------------------------------ #
-st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
-st.markdown(HTML_HERO, unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)

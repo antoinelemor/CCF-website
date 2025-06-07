@@ -47,7 +47,7 @@ def _inject_home_css() -> None:
 
 def _logo_base64() -> str | None:
     """Return base64 string for the logo (or *None* if missing)."""
-    logo_path = ROOT / "app" / "static" / "assets" / "CCF_icone.jpg"
+    logo_path = ROOT / "app" / "static" / "assets" / "CCF_icone.png"
     if not logo_path.exists():
         return None
     return base64.b64encode(logo_path.read_bytes()).decode()
@@ -126,3 +126,4 @@ def navbar(active: str = "Home") -> None:
         """,
         unsafe_allow_html=True,
     )
+

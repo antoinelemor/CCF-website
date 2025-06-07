@@ -1,145 +1,199 @@
 """
 Database page
-1) Animated title + intro
-2) Two centred glass buttons
-3) Click ⇒ animated ECharts plot *in-place*
+─────────────
+1) Animated title (first load only) + intro
+2) Two centred "glass" buttons (no page reload)
+3) Click => show ECharts chart in-place
 """
+
 from __future__ import annotations
-import json, html as esc, sys
+import sys, json, html as esc
 from pathlib import Path
 import pandas as pd
 import streamlit as st
 from streamlit.components.v1 import html
+from app.components.navbar import navbar
 
-# ── timings ───────────────────────────────────────────────────────
-BASE_DELAY = 300; WORD_MS = 60; MEDIA_MS = 120; TIME_MS = 4000; AXES_WAIT = 400
+# ─────────────────────────  CONSTANTS  ─────────────────────────
+AXES_WAIT, MEDIA_MS, TIME_MS = 400, 90, 60   # chart animation delays
+TITLE_WORDS = ["The", "CCF", "Database"]     # for the animated title
+BASE, STEP = 0.30, 0.06                     # word-by-word delay
 
-# ── paths & navbar ────────────────────────────────────────────────
+# ──────────────────────  BOILERPLATE SETUP  ────────────────────
 ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
-from app.components import navbar                                    # noqa: E402
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-st.set_page_config("CCF – Database", "🌎", layout="centered",
-                   initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="CCF – Database",
+    page_icon="🌎",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
 navbar(active="Database")
 
-# ── CSS (global + page) ───────────────────────────────────────────
+# Load custom CSS
 for css_file in ("home.css", "database.css"):
-    st.markdown(f"<style>{(ROOT / 'app/static/css' / css_file).read_text()}</style>",
-                unsafe_allow_html=True)
-
-# ── 1. animated title + intro ─────────────────────────────────────
-TITLE_WORDS = ["The", "CCF", "Database"]
-title_html = "".join(
-    f'<span class="type-word" '
-    f'style="animation-delay:{(BASE_DELAY+i*WORD_MS)/1000:.2f}s">{w}&nbsp;</span>'
-    for i, w in enumerate(TITLE_WORDS)
-)
-
-INTRO = ("We exhaustively collected more than 250 000 news articles since 1978 from "
-         "20 major Canadian newspapers, extracting full texts and metadata. "
-         "Below you can explore the database structure – the outlets and how "
-         "article volume evolves over time. Enjoy!")
-intro_start = BASE_DELAY + len(TITLE_WORDS)*WORD_MS + 200
-intro_html = "".join(
-    f'<span class="type-word" '
-    f'style="animation-delay:{(intro_start+i*WORD_MS)/1000:.2f}s">'
-    f'{esc.escape(w)}&nbsp;</span>'  for i, w in enumerate(INTRO.split())
-)
-intro_end_s = (intro_start + (len(INTRO.split())-1)*WORD_MS) / 1000
-
-st.markdown(f"""
-<section class="db-hero">
-  <h1 style="font-size:clamp(2rem,3vw+1rem,2.6rem);font-weight:700;
-             margin:0 0 1.2rem;text-shadow:0 1px 4px rgba(0,0,0,.35)">
-    {title_html}
-  </h1>
-  <p class="db-description">{intro_html}</p>
-</section>
-""", unsafe_allow_html=True)
-
-# ── 2. glass buttons (vrais st.button) ────────────────────────────
-# ── 2. glass buttons (vrais <a>) ──────────────────────────────
-fade_s = intro_end_s + .5    # délai avant apparition
-
-st.markdown(f"""
-<div class="db-btn-row" style="--btn-delay:{fade_s:.2f}s">
-  <a href="?v=media" class="db-cta-btn" target="_self">
-      Show&nbsp;data&nbsp;by&nbsp;media
-  </a>
-  <a href="?v=time"  class="db-cta-btn" target="_self">
-      Show&nbsp;articles&nbsp;over&nbsp;time
-  </a>
-</div>
-""", unsafe_allow_html=True)
-
-
-# ── 3.  data & ECharts ────────────────────────────────────────────
-ASSETS = ROOT / "app/static/assets"
-media_df  = pd.read_csv(ASSETS / "articles_by_media.csv")
-month_df  = (pd.read_csv(ASSETS / "articles_by_month.csv")
-               .dropna(subset=["year","month"])
-               .assign(year_month=lambda d:
-                       pd.to_datetime(d.year.astype(int).astype(str)+'-'+
-                                      d.month.astype(int).astype(str).str.zfill(2),
-                                      format="%Y-%m"))
-               .sort_values("year_month"))
-
-q = st.query_params.get("v")
-if q:
-    # Streamlit ≥1.35 renvoie une str, sinon list[str]
-    st.session_state.view = q if isinstance(q, str) else q[0]
-    # optionnel : on nettoie l'URL pour éviter une boucle ↻
-    st.query_params.clear()
-
-# ── 3. data & ECharts ────────────────────────────────────────────
-view = st.session_state.get("view")
-if view:
-    is_media = view == "media"
-    title = "Articles by Media" if is_media else "Articles per Month"
-
-    # Titre centré ↓
     st.markdown(
-        f'<h2 class="db-chart-title">{title}</h2>',
+        f"<style>{(ROOT / 'app' / 'static' / 'css' / css_file).read_text()}</style>",
         unsafe_allow_html=True
     )
 
+# ─────────────────────────  STATE  ─────────────────────────────
+# If "view" is not in session state, it's first load => animate title
+if "view" not in st.session_state:
+    st.session_state["view"] = None
 
-    def echarts_option(kind: str) -> str:
-        if kind == "media":
-            labs = json.dumps(media_df.media.tolist())
-            vals = json.dumps(media_df.n_articles.tolist())
-            return f"""{{
-  tooltip:{{trigger:'axis'}},
-  xAxis:{{type:'category',data:{labs},axisLabel:{{rotate:35}}}},
-  yAxis:{{type:'value',name:'Articles'}},
-  series:[{{type:'bar',data:{vals},
-    itemStyle:{{color:{{type:'linear',x:0,y:0,x2:0,y2:1,
-      colorStops:[{{offset:0,color:'#f0f1f2'}},
-                  {{offset:1,color:'#41626a'}}]}}}},
-    animationDelay:(i)=>{AXES_WAIT}+{MEDIA_MS}*i,
-    animationDuration:{MEDIA_MS}}}]
-}}"""
-        labs = json.dumps(month_df.year_month.dt.strftime("%Y-%m").tolist())
-        vals = json.dumps(month_df.n_articles.tolist())
-        return f"""{{
-  tooltip:{{trigger:'axis'}},
-  xAxis:{{type:'category',data:{labs}}},
-  yAxis:{{type:'value',name:'Articles'}},
-  series:[{{type:'line',data:{vals},smooth:true,symbol:'circle',
-    lineStyle:{{width:3,color:'#41626a'}},
-    areaStyle:{{color:'rgba(65,98,106,0.15)'}},
-    animationDelay:(i)=>{AXES_WAIT}+{TIME_MS}*i,
-    animationDuration:{TIME_MS}}}]
-}}"""
+view = st.session_state["view"]  # shorthand
 
+# ────────────────────────  TEXTS / INTRO  ──────────────────────
+INTRO = {
+    None: (
+        "We exhaustively collected more than 250 000 news articles since 1978 "
+        "from 20 major Canadian newspapers, extracting full texts and metadata. "
+        "Below you can explore the database structure – the outlets and how "
+        "article volume evolves over time. Enjoy!"
+    ),
+    "media": (
+        "We collected climate-change articles from 20 outlets representative of "
+        "the Canadian media landscape and with the largest readership. They are "
+        "displayed below in descending order of article count."
+    ),
+    "time": (
+        "We gathered articles from 20 leading outlets, reaching as far back as "
+        "possible to build a geographically and historically exhaustive corpus "
+        "for Canada."
+    ),
+}[view]
+
+# ─────────────────────  HERO (title + desc)  ───────────────────
+# Animate the title only if view is None (i.e. first page load)
+if view is None:
+    title_html = "".join(
+        f'<span class="type-word" style="animation-delay:{BASE + i*STEP:.2f}s">'
+        f'{word}&nbsp;</span>'
+        for i, word in enumerate(TITLE_WORDS)
+    )
+else:
+    # If user already clicked a button, show a static title
+    title_html = " ".join(TITLE_WORDS)
+
+# Description is always word-by-word, but starts faster if not first load
+desc_delay = BASE + 0.4 if view is None else 0.10
+desc_html = "".join(
+    f'<span class="type-word" style="animation-delay:{desc_delay + i*STEP:.2f}s">'
+    f'{esc.escape(w)}&nbsp;</span>'
+    for i, w in enumerate(INTRO.split())
+)
+desc_cls = "db-description alt" if view else "db-description"
+
+st.markdown(
+    f"""
+<section class="db-hero">
+  <h1 class="db-title">{title_html}</h1>
+  <p class="{desc_cls}">{desc_html}</p>
+</section>
+""",
+    unsafe_allow_html=True,
+)
+
+# ─────────────────────  BUTTONS (NO RELOAD)  ──────────────────
+# We'll display two centered buttons. Clicking them sets
+# session_state["view"] = "media" or "time" without reloading the page.
+
+# Container to center them via HTML or columns
+btn_container = st.container()
+with btn_container:
+    # Use columns to center them horizontally.
+    # (We avoid the ratio that triggered errors; we use numeric ratios.)
+    spacer_col, main_col, spacer_col2 = st.columns([1, 2, 1])
+    with main_col:
+        # Put the two buttons side by side in one row:
+        c1, c2 = st.columns(2, gap="large")
+        with c1:
+            btn_media = st.button("Show data by media", key="btn_media")
+        with c2:
+            btn_time = st.button("Show articles over time", key="btn_time")
+
+# If either button is pressed, update the session state
+if btn_media:
+    st.session_state["view"] = "media"
+    view = "media"
+if btn_time:
+    st.session_state["view"] = "time"
+    view = "time"
+
+# ─────────────────────  LOAD DATA / SHOW CHART  ───────────────
+ASSETS = ROOT / "app" / "static" / "assets"
+media_df = pd.read_csv(ASSETS / "articles_by_media.csv")
+month_df = (
+    pd.read_csv(ASSETS / "articles_by_month.csv")
+      .dropna(subset=["year", "month"])
+      .assign(
+          year_month=lambda df: pd.to_datetime(
+              df["year"].astype(int).astype(str) + "-"
+              + df["month"].astype(int).astype(str).str.zfill(2)
+          )
+      )
+      .sort_values("year_month")
+)
+
+if view:
+    # Show a chart title
+    st.markdown(
+        f"<h2 class='db-chart-title'>"
+        f"{'Articles by Media' if view == 'media' else 'Articles per Month'}"
+        f"</h2>",
+        unsafe_allow_html=True
+    )
+
+    # Prepare the ECharts option string
+    if view == "media":
+        labs = media_df["media"].tolist()
+        vals = media_df["n_articles"].tolist()
+        option = f"""{{
+          tooltip:{{trigger:'axis'}},
+          xAxis:{{type:'category',data:{json.dumps(labs)},axisLabel:{{rotate:35}}}},
+          yAxis:{{type:'value',name:'Articles'}},
+          series:[{{
+            type:'bar',
+            data:{json.dumps(vals)},
+            itemStyle:{{color:{{type:'linear',x:0,y:0,x2:0,y2:1,
+              colorStops:[
+                {{offset:0,color:'#f0f1f2'}},
+                {{offset:1,color:'#41626a'}}
+              ]
+            }}}},
+            animationDelay:(i)=>{AXES_WAIT}+{MEDIA_MS}*i,
+            animationDuration:{MEDIA_MS}
+          }}]
+        }}"""
+    else:
+        labs = month_df["year_month"].dt.strftime("%Y-%m").tolist()
+        vals = month_df["n_articles"].tolist()
+        option = f"""{{
+          tooltip:{{trigger:'axis'}},
+          xAxis:{{type:'category',data:{json.dumps(labs)}}},
+          yAxis:{{type:'value',name:'Articles'}},
+          series:[{{
+            type:'line',
+            data:{json.dumps(vals)},
+            smooth:true,
+            symbol:'circle',
+            lineStyle:{{width:3,color:'#41626a'}},
+            areaStyle:{{color:'rgba(65,98,106,0.15)'}},
+            animationDelay:(i)=>{AXES_WAIT}+{TIME_MS}*i,
+            animationDuration:{TIME_MS}
+          }}]
+        }}"""
+
+    # Render ECharts in-place via HTML
     html(f"""
-<div id="eplot" style="width:100%;max-width:900px;height:520px;margin:auto"></div>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-<script>
-const chart = echarts.init(document.getElementById('eplot'), null,
-                           {{renderer:'svg'}});
-chart.setOption({echarts_option('media' if is_media else 'time')});
-window.addEventListener('resize', ()=>chart.resize());
-</script>
-""", height=560)
+    <div id="eplot" style="width:100%;max-width:900px;height:520px;margin:auto"></div>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+      const chart = echarts.init(document.getElementById('eplot'), null, {{renderer:'svg'}});
+      chart.setOption({option});
+      window.addEventListener('resize', () => chart.resize());
+    </script>
+    """, height=560)

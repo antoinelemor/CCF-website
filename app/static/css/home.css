@@ -1,238 +1,125 @@
 /* =============================================================
-   CCF-Website • home.css
-   -------------------------------------------------------------
-   • Global beige theme (#ceccbd) applied to page chrome
-   • Hero section is a “window” on the background picture
-   • CTA buttons share the same gradient AND text colour
-   • Text colour is driven by --cta-text (easy to tweak)
+   CCF‑Website • home.css  (timings controlled by CSS vars)
+   Edit ONLY the variables (prefixed --t‑…) to tune the speed.
    ============================================================= */
 
-/* ----------  0. GLOBAL PALETTE  -------------------------------- */
-:root {
-  --ccf-beige:   #ceccbd;
+/* ----------  Global palette  ---------------------------------- */
+:root{
+  --ccf-beige:#ceccbd;
 
-  /* CTA gradient colours */
-  --cta-grad-1:  #f0f1f2;   /* light grey → white  */
-  --cta-grad-2:  #41626a;   /* desaturated teal   */
+  --cta-grad-1:#f0f1f2;
+  --cta-grad-2:#41626a;
+  --cta-text  :#000;
 
-  /* NEW  – CTA text colour (hero + navbar) */
-  --cta-text:    #000000;   /* <— change me to any HEX / rgb() / named colour */
+  /* Animation timings (populated by Python via <style> injection) */
+  /* e.g. : --logo_fade:1s; --tagline_wait:1s; … */
 }
 
-/* ----------  1. PAGE CHROME (header, sidebar, etc.) ------------ */
-body,
-.stApp,
-header,
-footer,
+/* ----------  Page chrome  ------------------------------------- */
+body,.stApp,header,footer,
 [data-testid="stSidebar"],
 [data-testid="stDecoration"],
-[data-testid="stTabs"] {
-  background-color: var(--ccf-beige) !important;
+[data-testid="stTabs"]{
+  background:var(--ccf-beige)!important;
 }
 
-/* ----------  2. KEYFRAMES -------------------------------------- */
-@keyframes appear_then_dim {
-  0%   { opacity: 0; }
-  60%  { opacity: 1; }
-  100% { opacity: 0.3; }
+/* ----------  Keyframes  --------------------------------------- */
+@keyframes appear_then_dim{0%{opacity:0}60%{opacity:1}100%{opacity:.3}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeWord{from{opacity:0;transform:translateY(4px)}
+                    to  {opacity:1;transform:translateY(0)}}
+
+/* ----------  Hero window  ------------------------------------- */
+.hero{
+  position:relative;min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  padding:0 1rem;overflow:hidden;z-index:0;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.hero,*:not(.cta-btn){background:transparent!important}
+
+/* BG logo */
+.bg-img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  filter:blur(1px);
+  animation:appear_then_dim var(--logo_fade,1s) forwards;
+  pointer-events:none;z-index:0;
 }
 
-@keyframes fadeWord {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ----------  Tagline  ----------------------------------------- */
+.tagline{
+  font-size:clamp(1.8rem,2.5vw + 1rem,2.5rem);font-weight:700;color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);margin:0;opacity:0;
+  animation:fadeIn var(--tagline_fade,1.2s) forwards;
+  animation-delay:var(--tagline_wait,1s);
 }
 
-/* ----------  3. HERO WINDOW ------------------------------------ */
-.hero {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0 1rem;
-  overflow: hidden;
-  z-index: 0;
+/* ----------  Animated description  ---------------------------- */
+.description{
+  margin-top:1.2rem;font:600 clamp(1rem,1vw + .8rem,1.15rem)/1.4 system-ui;
+  color:#000;text-shadow:0 1px 3px rgba(0,0,0,.3);
+  max-width:680px;display:flex;flex-wrap:wrap;justify-content:center;
 }
+.type-word{opacity:0;animation:fadeWord 0.3s forwards ease-out}
 
-/* Everything inside the hero (except CTA buttons) is transparent */
-.hero,
-.hero *:not(.cta-btn) {
-  background: transparent !important;
-}
-
-/* Background picture */
-.bg-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: blur(1px);
-  animation: appear_then_dim 1s forwards;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* ----------  4. TAGLINE ---------------------------------------- */
-.tagline {
-  font-size: clamp(1.8rem, 2.5vw + 1rem, 2.5rem);
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-  margin: 0;
-  opacity: 0;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  animation: fadeIn 1.6s forwards;
-  animation-delay: 2s;
-}
-
-/* ----------  5. CTA BUTTON ROW --------------------------------- */
-.button-row {
-  display: flex;
-  gap: 1.2rem;
-  margin-top: 2.2rem;
-  opacity: 0;
-  animation: fadeIn 1s forwards;
-  animation-delay: 2.2s;
-}
-
-/* ----------  6. CTA BUTTONS  (hero + navbar) ------------------- */
-.cta-btn,
-.cta-btn:visited {                    /* ensure colour overrides Streamlit */
-  padding: 0.85rem 1.75rem;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--cta-grad-1), var(--cta-grad-2));
-  color: var(--cta-text) !important;  /* ← single source of truth */
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.cta-btn,
-.cta-btn:visited,
-.cta-btn:hover,
-.cta-btn:active,
-.cta-btn:focus {
-  text-decoration: none !important;
-}
-
-
-.cta-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-}
-
-/* Active-page visual cue (navbar only) */
-.cta-btn.active {
-  filter: brightness(0.85);
-}
-
-/* ----------  7. DESCRIPTION ANIMÉE ----------------------------- */
-.description {
-  margin-top: 1.2rem;
-  font-size: clamp(1rem, 1vw + 0.8rem, 1.15rem);
-  font-weight: 600;
-  color: #000000;
-  max-width: 680px;
-  line-height: 1.4;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.type-word {
-  opacity: 0;
-  animation: fadeWord 0.3s forwards ease-out;
-}
-
-/* ----------  8. PROJECT MEMBERS TITLE ------------------------- */
-.team-title{
-  font-size: clamp(1.3rem, 1.8vw + 0.8rem, 1.7rem);
-  font-weight: 700;
-  color: #ffffff;
-  margin: 2.2rem 0 1.2rem;   /* espace au-dessus/dessous */
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-  opacity: 0;
-  animation: fadeIn 1s forwards;
-  animation-delay: 2.6s;     /* juste après les boutons */
-}
-
-/* ----------  9. TEAM ROW (placée sous le titre) --------------- */
-.team-row{
+/* ----------  CTA buttons & row -------------------------------- */
+.button-row{
   display:flex;
-  flex-wrap:wrap;
-  gap:1.8rem;
-  justify-content:center;
+  gap:1.2rem;
+  margin-top:2.2rem;
   opacity:0;
   animation:fadeIn 1s forwards;
-  animation-delay:2.8s;      /* suit le titre */
+  animation-delay:calc(var(--desc_wait,1s) + var(--cta_wait,0s));
 }
 
-/* cartes individuelles… (inchangé) */
-.member{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-decoration:none;
-  color:inherit;
-  opacity:0;                 /* fade membre par membre */
-  animation:fadeIn 0.8s forwards ease-out;
-}
-.member:nth-child(1){animation-delay:2.0s}
-.member:nth-child(2){animation-delay:2.3s}
-.member:nth-child(3){animation-delay:2.6s}
-
-.member img{
-  width:128px;
-  height:128px;
-  border-radius:50%;
-  object-fit:cover;
-  box-shadow:0 3px 8px rgba(0,0,0,0.25);
-  margin-bottom:0.5rem;
-}
-
-/* ---------- 10. MEMBER NAME BUTTON ---------------------------- */
-.member-btn{
-  display:inline-block;
-  padding:0.45rem 1.1rem;
+.cta-btn,
+.cta-btn:visited{
+  padding:.85rem 1.75rem;
   border:none;
   border-radius:999px;
   background:linear-gradient(135deg,var(--cta-grad-1),var(--cta-grad-2));
-  color:#000000 !important;           /* texte noir */
-  font-size:0.95rem;
-  font-weight:600;
-  text-decoration:none !important;    /* jamais souligné */
-  cursor:pointer;
-  box-shadow:0 3px 8px rgba(0,0,0,0.25);
-  transition:transform .25s ease,box-shadow .25s ease;
+  color:var(--cta-text)!important;
+  font:600 1rem system-ui;
+  text-decoration:none !important;  /* Ajouté pour ne pas souligner le texte */
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  transition:.25s ease all;
 }
-.member-btn:hover{
-  transform:translateY(-3px);
-  box-shadow:0 5px 12px rgba(0,0,0,0.3);
+.cta-btn:hover{
+  transform:translateY(-4px);
+  box-shadow:0 6px 14px rgba(0,0,0,.3);
 }
-
-
-.member-name{
-  font-weight:600;
-  font-size:1rem;
-  text-align:center;
+.cta-btn.active{
+  filter:brightness(.85);
 }
 
-.member-affil{
-  font-weight:400;
-  font-size:0.85rem;
-  text-align:center;
-  opacity:0.85;
+/* ----------  Project members  -------------------------------- */
+.team-title{
+  font-size:clamp(1.3rem,1.8vw + .8rem,1.7rem);font-weight:700;color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);margin:2.2rem 0 1.2rem;opacity:0;
+  animation:fadeIn 1s forwards;
+  animation-delay:calc(var(--desc_wait,1s)+var(--cta_wait,0s)+var(--team_wait,.2s));
 }
+.team-row{
+  display:flex;flex-wrap:wrap;gap:1.8rem;justify-content:center;opacity:0;
+  animation:fadeIn 1s forwards;
+  animation-delay:calc(var(--desc_wait,1s)+var(--cta_wait,0s)+var(--team_wait,.2s)+.2s);
+}
+
+/* member card */
+.member{display:flex;flex-direction:column;align-items:center;opacity:0;
+        animation:fadeIn .8s forwards ease-out}
+.member img{width:128px;height:128px;border-radius:50%;object-fit:cover;
+            box-shadow:0 3px 8px rgba(0,0,0,.25);margin-bottom:.5rem}
+.member-btn{
+  padding:.45rem 1.1rem;border-radius:999px;
+  background:linear-gradient(135deg,var(--cta-grad-1),var(--cta-grad-2));
+  color:#000!important;font:600 .95rem system-ui;text-decoration:none!important;
+  box-shadow:0 3px 8px rgba(0,0,0,.25);transition:.25s ease all
+}
+.member-btn:hover{transform:translateY(-3px);box-shadow:0 5px 12px rgba(0,0,0,.3)}
+.member-affil{font:400 .85rem system-ui;opacity:.85}
+
+/* staggered appearance of members */
+.member:nth-child(1){animation-delay:calc(var(--member_step,.25s)*0 + var(--member_start,0s))}
+.member:nth-child(2){animation-delay:calc(var(--member_step,.25s)*1 + var(--member_start,0s))}
+.member:nth-child(3){animation-delay:calc(var(--member_step,.25s)*2 + var(--member_start,0s))}
