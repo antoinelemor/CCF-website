@@ -173,19 +173,21 @@ body,.stApp,header,footer,
   filter:brightness(.8) contrast(1.1);
 }
 
+/* ——— Mobile fix : boutons adaptatifs (Home only) ——— */
 @media (max-width: 599px){
-  .button-row{
-    flex-wrap: wrap;          /* autorise un retour à la ligne */
-    gap: .8rem;               /* espace réduit entre les boutons */
-    padding: 0 1rem;          /* petite marge interne */
-    justify-content: center;  /* centrage même sur 2 lignes */
+  .hero .button-row{          /* .hero = conteneur unique à la Home page */
+    flex-wrap: wrap;
+    gap: .8rem;
+    padding: 0 1rem;
+    justify-content: center;
   }
-  .cta-btn{
-    flex: 1 1 auto;           /* permet de se comprimer un peu */
-    padding: .75rem 1.25rem;  /* padding horizontal + étroit */
-    white-space: nowrap;      /* évite la coupure “The\nDatabase” */
+  .hero .button-row .cta-btn{ /* n’impacte plus les autres pages */
+    flex: none;               /* ← on enlève le “1 1 auto” global */
+    padding: .75rem 1.25rem;
+    white-space: nowrap;
   }
 }
+
 
 .member-photo img{
   transition: .3s transform ease-out;
