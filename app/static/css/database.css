@@ -124,4 +124,10 @@ div.stButton > button:hover {
   opacity:.9;
 }
 
+/* ——— 1. Masque l'ancre générée par Streamlit ——— */
+.db-title a {                /* l’ancre est le seul <a> dans <h1> */
+  display: none !important;
+}
+
+
 
